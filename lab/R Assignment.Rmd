@@ -1,0 +1,74 @@
+---
+title: "R Assignment Notebook"
+output: html_notebook
+---
+
+# Assignment problems
+
+
+Make vector (7 8 6 5 4 3 2 1) 
+```{r}
+a = 7:1
+```
+Make vector ( 2 4 6 8 10 12 14 )
+```{r}
+b = seq(from = 2, to = 14, by = 2)
+```
+Make vector ( 1 2 2 3 3 3 4 4 4 4 5 5 5 5 5 )
+```{r}
+c = rep(c(1,2,3,4,5), c(1,2,3,4,5))
+```
+Make vector ( 1 2 3 1 2 3 1 2 3)
+```{r}
+d = rep(c(1,2,3), 3)
+```
+Make vector of length 100 with all entries = 3 .
+```{r}
+e = rep(3, 100)
+```
+Concatenate the first two vectors. 
+```{r}
+f = c(a, b)
+```
+%---------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------
+
+Make a matrix ( 3 2 2; 2 3 2; 2 2 3) 
+
+Add a new row ( 2 6 8) at the end.
+
+Add a new column ( 1 2 3 4)
+
+Whats the new dimension of the matrix. 
+
+Create a matrix with no of rows = 10, ncol = 20 and all entries zero.
+
+%-----------------------------------------------------------------------------------------------
+%-----------------------------------------------------------------------------------------------
+
+Data structures. 
+
+Create a data frame for the following data ( name it data_frame )
+
+    alpha beta gamma
+      1    4     7
+      2    5     8
+      3    6     9
+
+
+Add a new column "delta" with value c( 7,8,9) to the data. 
+
+Add new row ( 1 2 3 4) and ( 1 4 5 8)
+
+Create a new data frame with  column "alpha" and "gamma" ( name it new_data_frame )   
+
+Extract the data with "alpha" = 1. 
+
+Create a new data frame with first two rows of new_data_frame and print it. 
+
+
+
+%-----------------------------------------------------------------------------------------------
+%-----------------------------------------------------------------------------------------------
+
+

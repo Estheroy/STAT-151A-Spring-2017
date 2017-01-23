@@ -1,0 +1,422 @@
+---
+title: "R Basics, STAT 151a"
+output:
+  html_notebook: default
+  html_document: default
+  pdf_document: default
+---
+
+
+
+
+
+Basic arithmetic operations
+
+
+
+
+Addition, Subtraction, Multiplication, Division, Exponentiation
+
+
+
+```{r}
+x<- 5
+y<- 2
+x
+y
+x+y  
+x*y
+x-y
+x/y
+x^2 
+```
+# Vectors
+
+R is an object oriented programming. The 3 main data structures are Vector, Matrix, Dataframe
+
+Next we will learn how to create vectors in R. 
+
+First method.
+
+```{r}
+x <- c(1,2,3,7,9,3) # write down each entry of vector 
+x
+```
+The c() stands for concatenation. This method is good for creating small vectors. 
+
+Suppose we want to create a vector which contains all the integers from 1 to 25. We can use the first method, but its time consuming to write all the entries from 1 to 25. 
+
+Second method 
+
+```{r}
+x <- 1:25
+x
+```
+
+One problem with the above method is the gap between consecutive entries is 1. So for example if we want to generate a vector (2 4 6 8 10), we cannot use the second method directly. ( One way to do it using second method is x<- 2*(1:4) ) .  Third method for creating vetors is using seq(). 
+
+
+```{r}
+x<- seq(from = 2, to = 12, by =2)
+x
+y<- seq(from=12,to=2,by=-2)
+y
+z<- seq(1,10,length.out = 40) # vector of length 40 with equally spaced entries, First entry is 1 alnd the last entry is 10. 
+z
+length(z)
+```
+
+Fourth method of generating vectors is by rep().
+
+```{r}
+x<- rep(1,25) 
+x
+y<- rep(1:3,3)
+y
+z<-rep(1:4,c(2,3,4,5))
+z
+```
+
+Basic operation on a vector. Mean, Variance, Size. 
+
+```{r}
+x<-seq(from = 2, to = 12, by =0.2)
+x
+mean(x)
+var(x)
+length(x)
+```
+
+Concatenating two vectros 
+
+```{r}
+x<- 1:4
+y<- 8:12
+z<- c(x,y)
+z
+```
+
+% ________________________Problems_______________________________________________
+              
+%________________________________________________________________________________
+
+
+
+
+# How to create matrix in R. 
+
+First method.  Specify a vector and tell how to fill matrix entries using the vector.
+
+```{r}
+m<- matrix(1:20,nrow=4,byrow=T) # specifies no_of_rows(nrow)  and the matrix is filled by row (byrow=T)
+m
+```
+
+Fiiling entries by column
+
+```{r}
+m<- matrix(1:20,nrow=4,byrow=F) # specifies no_of_rows(nrow)  and the matrix is filled by column (byrow=F)
+m
+```
+
+You can also specify the number of columns.
+
+```{r}
+m<- matrix(1:20,ncol=10,byrow=F) # specifies no_of_columns(nrow)  and the matrix is filled by column (byrow=F)
+m
+```
+
+Second method is by concatenating vectors.
+
+```{r}
+a<-c(5,7,9)
+b<-c(6,3,4)
+c<-1:3
+m<-cbind(a,b,c)
+m
+```
+
+Basic matrix oprrartions.
+Row-sum, Column-sum, Dimension
+
+```{r}
+m<- matrix(1:20,nrow=4,byrow=T) 
+m
+rowSums(m)
+colSums(m)
+rowMeans(m)
+colMeans(m)
+dim(m)
+```
+
+Addition, Subtraction, Multiplication. 
+
+```{r}
+m1<- matrix(1:25,nrow=5,byrow=T) 
+m2<- matrix(3:27,nrow=5,byrow=T) 
+m1
+m2
+m1+m2 # Has to be of same dimension
+m1-m2  # Has to be of same dimension 
+m1%*%m2  # note that the multiplication sign is %*% and NOT *               
+```
+
+Vector dot product and matrix elementwise product. 
+
+```{r}
+a<- 1:5
+b<- 3:7
+
+a*b # this is dot product for vectors
+m1*m2 # this is matrix elementwise product 
+
+```
+
+Assessing vector and matrix entries.
+
+```{r}
+x<- seq(2,20,by=2) # This is shortcut for seq(from=2,to=20,by=2)
+x
+
+x[5] # 5th entry
+x[1:4] # first four entry
+x[c(2,3,5,8)] # 2nd 3rd 5th and 8th entry
+x[-2] # all entries except 2nd one
+
+x[-c(2,4,6)] # all entries except 2nd 4th and 6th entry
+
+
+```
+
+
+
+Getting a Sub-matrix. The method is very similar to sub-vector selestion
+
+```{r}
+m<- matrix(1:20,nrow=4,byrow=TRUE)
+m
+
+m[2,3] # the entry of m which is at the intersection of row 2 column 3. 
+
+m[1,] # First row of m
+m[,1] # First column of m
+m[c(1,3),] # row 1 and 3 of matrix m
+m[c(1,3),c(2,5)] # submatrix of m with row 1 row 3, column 2 , column 5
+
+m[-2,] # all rows except row 2
+
+```
+
+Make a diagonal matrix
+
+```{r}
+diag(c(2,4,6))
+```
+
+
+%___________________PROBLEMS____________________________
+
+%_______________________________________________________
+
+
+# data frames
+
+
+```{r}
+n = c(2, 3, 5,7) 
+s = c("aa", "bb", "cc","dd") 
+b = c(TRUE, FALSE, TRUE,TRUE) 
+df = data.frame(n, s, b) 
+df
+```
+
+
+Adding a row
+
+```{r}
+new_row <- data.frame(n=9,s="ee",b=FALSE)
+df<-rbind(df,new_row)
+df
+```
+
+Adding a column
+
+```{r}
+new_col<- data.frame(bool=c(1,0,1,1,0))
+df<-cbind(df,new_col)
+df
+```
+
+Number of rows and number of columns
+
+```{r}
+nrow(df) # number of observations
+ncol(df)  # number of variables 
+```
+
+Selecting few rows
+
+```{r}
+# Find the rows of df for which "bool" = 0
+df_bool_0 <- df[df$bool==0,]
+df_bool_0
+```
+
+Selecting few columns
+
+```{r}
+# Create a new dataset with column "n", "s" , "b"
+col_names<- c("n","s","b")
+new_df<- df[,col_names]
+new_df
+```
+
+
+%_______________________________Problems________________________________
+
+%____________________________________________________________________________
+
+# for, while, if-else
+
+They are similar to any other programming languages 
+
+```{r}
+for(i in 1:5){
+  print(i)
+}
+```
+
+
+```{r}
+b<-2
+a<- 3
+if(b>a){
+  print('b is greater than a')
+}else{
+  print("b is less than or equal to a ",quote = 0)
+}
+```
+
+```{r}
+a<- 5
+i<- 0
+while(i<a){
+  cat("value of i is",i,"i is less than a \n")   # cat() can print several strings together
+  i<- i+1
+}
+```
+
+
+
+
+
+
+
+
+# Creating functions in R. 
+
+```{r}
+myfun<-function(a){  # a is the input 
+  mean_a <- mean(a)
+  var_a <- var(a)
+  b<- (a-mean_a)/sqrt(var_a)
+  return(b) # b is the output of the function
+}
+output<- myfun(1:30)
+output
+```
+
+
+
+# Basic Plotting in R.
+
+```{r}
+head(cars)
+plot(cars$speed,cars$dist,xlab="Speed",ylab = "Distance", main = "Plot of  speed vs  distance")
+
+```
+Changing plot color
+
+```{r}
+plot(cars$speed,cars$dist,xlab="Speed",ylab = "Distance", main = "Plot of  speed vs  distance" , col='red')
+```
+
+Changeing the point type and size. 'pch' controls the point type and 'cex' controls the point size ( .5 = 50% of original size ) in R plot. 
+
+
+```{r}
+plot(cars$speed,cars$dist,xlab="Speed",ylab = "Distance", main = "Plot of  speed vs  distance" , col='red' ,     pch = 16, cex=.5)
+```
+
+ Histogram . 
+
+```{r}
+hist(cars$speed, breaks = 8, xlab = "Car speed", main="Histogram of car speed" , col = 'orange' ) # breaks gives the number of bins ( equally spaced)
+```
+
+
+
+# Using packages
+
+
+Installing packages in R. 
+
+
+```{r}
+#install.packages('readr')
+```
+
+Loading packages ( ot library)
+
+```{r}
+library(readr)
+```
+
+
+Some other data-structures in R.
+
+List
+
+```{r}
+Student <- list(name = 'Jake', age=22, major ='Statistics' , GPA = 3.8 )
+Student
+```
+
+
+```{r}
+data<- list(x=cars[,1],y=cars[,2]) # from cars data
+head(data)
+```
+
+Summary fuction
+
+```{r}
+summary(data)
+```
+
+
+
+
+Another function example
+
+```{r}
+my_new_fun<-function(a){
+  mean_a <- mean(a)
+  var_a <- var(a)
+  b<- (a-mean_a)/sqrt(var_a)
+  out <- list(data = a, normalizedData = b, data_mean = mean_a , data_var = var_a)
+  return(out)
+}
+output<- my_new_fun(1:30)
+output
+```
+
+
+
+
+
+
+
+
+
+
