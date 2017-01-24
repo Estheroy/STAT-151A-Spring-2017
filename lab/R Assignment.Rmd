@@ -34,14 +34,29 @@ f = c(a, b)
 %---------------------------------------------------------------------------------------------
 
 Make a matrix ( 3 2 2; 2 3 2; 2 2 3) 
+```{r}
+a = matrix(c(3,2,2,2,3,2,2,2,3), nrow = 3, byrow = T)
 
+m1 = matrix(2, nrow = 3, ncol = 3) + diag(rep(1,3))
+
+```
 Add a new row ( 2 6 8) at the end.
-
+```{r}
+b = rbind(a, c(2,6,8))
+```
 Add a new column ( 1 2 3 4)
-
+```{r}
+c = cbind(b, c(1,2,3,4))
+```
 Whats the new dimension of the matrix. 
-
+```{r}
+d = dim(c)
+```
 Create a matrix with no of rows = 10, ncol = 20 and all entries zero.
+```{r}
+e = matrix(0, nrow = 10, ncol = 20)
+m2 = matrix(rep(0, 200), nrow = 10, ncol = 20)
+```
 
 %-----------------------------------------------------------------------------------------------
 %-----------------------------------------------------------------------------------------------
@@ -55,20 +70,97 @@ Create a data frame for the following data ( name it data_frame )
       2    5     8
       3    6     9
 
+```{r}
+df1 = data.frame(
+  alpha = c(1,2,3),
+  beta = c(4,5,6),
+  gamma = c(7,8,9)
+)
+```
+Add a new column "delta" with value c(7,8,9) to the data. 
+```{r}
+df1$delta = c(7,8,9)
 
-Add a new column "delta" with value c( 7,8,9) to the data. 
+new_col = c(7,8,9)
+df1 = cbind(df1, new_col)
+```
 
 Add new row ( 1 2 3 4) and ( 1 4 5 8)
+```{r}
+new_rows = data.frame(
+  alpha = c(1,1),
+  beta = c(2,3),
+  gamma = c(3,5),
+  delta = c(4,8)
+)
+df1 = rbind(df1, new_rows)
+```
 
 Create a new data frame with  column "alpha" and "gamma" ( name it new_data_frame )   
+```{r}
+new_data_frame = data.frame(
+  alpha = df1$alpha,
+  gamma = df1$gamma
+)
+```
 
 Extract the data with "alpha" = 1. 
+```{r}
+new_data_frame[new_data_frame$alpha == 1,]
+```
 
 Create a new data frame with first two rows of new_data_frame and print it. 
-
+```{r}
+new_data_frame2 = new_data_frame[1:2,]
+```
 
 
 %-----------------------------------------------------------------------------------------------
 %-----------------------------------------------------------------------------------------------
 
+
+```{r}
+
+library(readr)
+airline = read_csv("~/Desktop/STAT 151A/STAT-151A/lab/airline.csv")
+
+head(airline)
+tail(airline)
+summary(airline)
+
+SFO_airline = airline[airline$Origin == "SFO",]
+head(SFO_airline)
+
+SFO_to_JFK_airline = SFO_airline[SFO_airline$Dest == "JFK",]
+head(SFO_to_JFK_airline)
+nrow(SFO_to_JFK_airline)
+
+# 1 -> Sunday
+# 7 ->Saturday
+SFO_to_JFK_Sunday = SFO_to_JFK_airline[SFO_to_JFK_airline$DayOfWeek == 1,]
+nrow(SFO_to_JFK_Sunday)
+
+SFO_to_JFK_Monday = SFO_to_JFK_airline[SFO_to_JFK_airline$DayOfWeek == 2,]
+nrow(SFO_to_JFK_Monday)
+
+SFO_airline_2005 = SFO_airline[SFO_airline$Year  == 2005,]
+nrow(SFO_airline_2005)
+
+# flight from SFO to ORD in 2008 Jun
+SFO_to_ORD_2008_Jun = SFO_airline[SFO_airline$Year == 2008 & SFO_airline$Dest == "ORD" & SFO_airline$Month == 6,]
+nrow(SFO_to_ORD_2008_Jun)
+
+# flight from SFO to ORD in 2005 Mar
+SFO_to_ORD_2005_Mar = SFO_airline[SFO_airline$Year == 2005 & SFO_airline$Dest == "ORD" & SFO_airline$Month == 3,]
+nrow(SFO_to_ORD_2005_Mar)
+
+# input: month, year, destination
+# output: airline data form SFO to destination in that month and year
+get_airline_data = function(in_month, in_year, in_dest) {
+  result = SFO_airline[SFO_airline$Dest == in_dest & SFO_airline$Month == in_month & SFO_airline$Year == in_year,]
+  return(result)
+}
+
+nrow(get_airline_data(3, 2005, "ORD"))
+```
 
