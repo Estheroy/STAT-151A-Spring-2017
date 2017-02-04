@@ -1,0 +1,272 @@
+---
+title: "R Notebook Lab-2 "
+author: "Xuanpei Ouyang"
+output: pdf_document
+---
+
+# Basic simulation
+
+
+General rule for simulation ---- 
+
+p -- p is short for probability, 'p' is used for getting distribution function value Pr( X<= p)
+
+```{r}
+x<- seq(-5,5,length.out = 100);
+p<- pgamma(x,shape = 3,scale = 1/4);
+plot(x,p,pch=16,cex=.5,col="red");
+```
+
+q -- q is short for quantile, 'q' is used for getting quantiles. 
+
+```{r}
+q1<- qnorm(.975)
+q1
+q2<- qnorm(.025)
+q2
+```
+
+
+
+r -- r is short for random, 'r' is used for simulating random sample from distribution. 
+
+```{r}
+x<- rnorm(1000);
+qqnorm(x,col="red",pch=10,cex=.5)
+```
+
+
+d -- d is short for density, 'd' is used for getting density of a probability distribution
+
+```{r}
+x<- seq(-4,4,length.out = 100)
+d<- dnorm(x)
+plot(x,d,col="red",pch=16, ty='l')
+```
+
+
+ 1. Simulate 1000 observation from Normal(3,4), Gamma(3,1/4), Exp(.3), Cauchy(3,5), t(df=5) , chi-sq(df = 5 ), plot their histograms.
+
+```{r}
+
+normal_1000 = rnorm(1000, 3, 4)
+hist(normal_1000)
+
+gamma_1000 = rgamma(1000, 3, 1/4)
+hist(gamma_1000)
+
+exp_1000 = rexp(1000, 0.3)
+hist(exp_1000)
+
+cauchy_1000 = rcauchy(1000, 3, 5)
+hist(cauchy_1000)
+
+t_1000 = rt(1000, df = 5)
+hist(t_1000)
+
+chisq_1000 = rchisq(1000, df = 5)
+hist(chisq_1000)
+
+```
+
+ 2. Find 2.5% and 97.5% quantiles for the above distributions.
+ 
+```{r}
+
+norm_quantile_2.5 = qnorm(0.025, 3, 4)
+norm_quantile_2.5
+
+norm_quantile_97.5 = qnorm(0.975, 3, 4)
+norm_quantile_97.5
+
+gamma_quantile_2.5 = qgamma(0.025, 3, 1/4)
+gamma_quantile_2.5
+
+gamma_quantile_97.5 = qgamma(0.975, 3, 1/4)
+gamma_quantile_97.5
+
+exp_quantile_2.5 = qexp(0.025, 0.3)
+exp_quantile_2.5
+
+exp_quantile_97.5 = qexp(0.975, 0.3)
+exp_quantile_97.5
+
+cauchy_quantile_2.5 = qcauchy(0.025, 3, 5)
+cauchy_quantile_2.5
+
+cauchy_quantile_97.5 = qcauchy(0.975, 3, 5)
+cauchy_quantile_97.5
+
+t_quantile_2.5 = qt(0.025, df = 5)
+t_quantile_2.5
+
+t_quantile_97.5 = qt(0.975, df = 5)
+t_quantile_97.5
+
+chisq_quantile_2.5 = qchisq(0.025, df = 5)
+chisq_quantile_2.5
+
+chisq_quantile_97.5 = qchisq(0.975, df = 5)
+chisq_quantile_97.5
+```
+ 
+ 3. Plot density for Normal(3,4), Gamma(3,1/4), Exp(.3), use - 'd'
+
+```{r}
+norm_x = seq(-13, 19, length.out = 100)
+norm_d = dnorm(norm_x, 3, 4)
+plot(norm_x, norm_d, col="red", pch=16, ty="l")
+
+gamma_x = seq(0, 50, length.out = 100)
+gamma_d = dgamma(gamma_x, 3, 1/4)
+plot(gamma_x, gamma_d, col="red", pch=16, ty="l")
+
+exp_x = seq(0, 25, length.out = 100)
+exp_d = dexp(exp_x, 0.3)
+plot(exp_x, exp_d, col="red", pch=16, ty="l")
+
+```
+
+
+ 4. Plot Distribution function for Normal(3,4), Gamma(3,1/4), Exp(.3) , use -- 'p'
+
+```{r} 
+
+norm_x = seq(-13, 19, length.out = 100)
+norm_p = pnorm(norm_x, mean = 3, sd = 4)
+plot(norm_x, norm_p, pch = 16, cex = 0.5, col = "red")
+
+gamma_x = seq(0, 5, length.out = 100)
+gamma_p = pgamma(gamma_x, shape = 3,scale = 1/4)
+plot(gamma_x, gamma_p, pch=16, cex=.5, col="red")
+
+exp_x = seq(0, 30, length.out = 100)
+exp_p = pexp(exp_x, 0.3)
+plot(exp_x, exp_p, pch=16, cex=.5, col="red")
+
+``` 
+
+
+5) ------------------------ Simulation data from an actual linear model ----------------------
+
+
+-- generate x by seq(0,15,length.out = 30); 
+```{r}
+x = seq(0, 15, length.out = 30)
+x
+```
+
+-- replicate x 6 times and store it in new_x, -- use rep(x,6)
+```{r}
+new_x = rep(x, 6)
+new_x
+```
+
+-- Generate y by y = 2+3*x 
+```{r}
+y = 2 + 3*new_x
+y
+```
+
+-- add Gaussian noise to y ( sd = 3.5)
+```{r}
+y = y + rnorm(length(y), mean = 0, sd = 3.5)
+y
+```
+
+-- plot x vs y 
+```{r}
+plot(new_x, y, pch = 16, cex = 0.5, col = "red")
+```
+
+
+
+
+
+# Transformation with real data . 
+
+----- Example 1: Emission data
+
+The data consists of the emissions of three different pollutants from 46 different engines. 
+
+We will be analyzing the carbon-monoxide data here. Lets see if the data is skewed or not ?
+
+6) Load the data, use summary() to get a summary of the variables,  Calculate the  (q3-median)/(median-q1).
+
+```{r}
+
+engine = read.csv("~/Desktop/STAT 151A/STAT-151A/lab/lab2/table_7_3.csv", sep=",", head = TRUE)
+summary(engine)
+co_coeff = (10.015 - 5.905)/(5.905 - 4.388)
+co_coeff
+```
+
+
+At first glance the carbon monoxide data appears to be skewed, because the spread between the third quantile and the max is five times the spread between the min and the first quantile. 
+
+7)  Plot the  histogram for co  . 
+```{r}
+hist(engine$co, main = "Carbon Monoxide", col = "lightskyblue", breaks = 6)
+```
+
+8)  Use log-transformation on "co" and plot histogram of transformed variable. 
+```{r}
+log_engine_co = log(engine$co)
+hist(log_engine_co, main = "Carbon Monoxide", col = "lightskyblue")
+```
+
+
+# Example 2: 
+ Import and GDP
+ 
+ 9. Load data
+```{r}
+trade = read.csv("~/Desktop/STAT 151A/STAT-151A/lab/lab2/imports.csv")
+```
+
+ 10. See summary data.
+```{r}
+summary(trade)
+```
+
+ 11. Calculate (q3-q2)/(q2-q1) for IMPORT and GDP
+```{r}
+import_coeff = (164 - 31.8)/(31.8-4.8)
+import_coeff
+GDP_coeff = (923 - 200)/(200-21.4)
+GDP_coeff
+```
+
+ 12. Lets look at the histograms .
+```{r}
+hist(trade$IMPORTS, main="IMPORTS", col = "lightskyblue")
+hist(trade$GDP, main="GDP", col = "lightskyblue")
+```
+
+ 13. What do we see in these histograms ? 
+
+They are both highly right skewed distribution.
+
+
+  
+ 14. What transform to use -- Any suggestions ?
+
+Since they are highly right skewed distribution, we can use logrithm transformation.
+  
+
+  
+ 15. Plot the histogram for the transformed data ? How does it look ?
+```{r}
+hist(log(trade$IMPORTS), main="Transformed IMPORTS", col = "lightskyblue")
+hist(log(trade$GDP), main="Transformed GDP", col = "lightskyblue")
+```
+After transformation, both data look less right skewed and become more normally distributed.
+
+
+
+ 16. Plot Import vs GDP ( after transformation ). 
+```{r}
+plot(log(trade$IMPORTS), log(trade$GDP), col = "red", xlim = c(-2.5, 9), pch = 16)
+model = lm( log(trade$GDP) ~ log(trade$IMPORTS))
+abline(model)
+```

@@ -1,0 +1,188 @@
+---
+title: "Examining Distributions"
+author: "Seema Singh Saharan"
+date: "December 22, 2016"
+output: word_document
+---
+# Included Packages
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(car)
+library(plotrix)
+library(rgl)
+library(lattice)
+library(ggplot2)
+library(hexbin)
+library(gridExtra)
+library(stats)
+```
+
+# File Reading and Creation of Histogram 
+```{r}
+HeartAttack<-read_excel("HeartAttack.xlsx")
+head(HeartAttack)
+with(HeartAttack,hist(Resting_Blood_Pressure))
+with(HeartAttack,hist(Resting_Blood_Pressure,breaks="FD",col="gray"))
+with(HeartAttack, {
+  hist(Resting_Blood_Pressure,breaks="FD",freq=FALSE,ylab="Density")
+  #ylab command defines the y axis. Freq=FALSE defines Density graph instead of Frequency
+  lines(density(Resting_Blood_Pressure),lwd=2)
+  #lines command draws the density. lwd=2 draws double thick line.
+  rug(Resting_Blood_Pressure)
+  box()
+  #box creates a box around the image.
+})
+
+```
+
+# Quantile Quantile Plots
+```{r}
+with(HeartAttack,qqPlot(Resting_Blood_Pressure,labels = row.names(HeartAttack),id.n=3))
+#The qqplot() function in the car package provides the 95% CI around the line fit to the plot.The #row name provides the Resting_Blood_Pressure being evaluated and the id.n=3 provides marking the #three most extreme points.
+```
+
+#Demonstrating normality,right skew,thick tails using QQ PLots
+```{r}
+qqPlot(rnorm(100,0,1))
+qqPlot(rchisq(100,3))
+qqPlot(rt(100,2))
+
+```
+
+# Boxplots 
+```{r}
+Boxplot(~  Resting_Blood_Pressure,data=HeartAttack)
+#Parallel Box Plots
+Boxplot(Resting_Blood_Pressure~Sex,data=HeartAttack, main="Blood Pressure Gender", xlab="Female(0)    Male(1)", ylab="Resting Blood Pressure")
+#Boxplots of Means
+mean_values<-with(HeartAttack,tapply(Resting_Blood_Pressure,Sex,mean))
+standard_deviation<-with(HeartAttack,tapply(Resting_Blood_Pressure,Sex,sd))
+# tapply() computes means ans sds for each gender
+plotCI(1:2,mean_values,standard_deviation,xaxt="n",xlab="Gender",ylab="Blood Pressure")
+# plotCI() function helps draw the graph.The parameters are coordinates on horizontal axis ,means 
+# on vertical axis,standard deviations,xaxt="n" suppresses the x ticks.
+lines(1:2,mean_values) 
+#lines joins the means with the lines
+axis(1,at=1:2,labels=names(mean_values))
+# axis specifies the groups on the x axis.
+
+```
+
+# Scatterplots 
+```{r}
+scatterplot(Resting_Blood_Pressure~Age,data=HeartAttack, main="Blood Pressure Age", xlab="Age", ylab=" Resting Blood Pressure")
+
+# scatterplot is a function in the car package that provides two smoothers on the scatterplot.
+# The first smoother is the Ordinary Least Squares(OLS) which can be suppressed by reg.line=FALSE
+# The second is a solid curved line which is the non parameteric regression smoother produced by # # the lowess smmoother(locally weighted scatterplot smoother) and this can be supressed by lowess # function in R.The variance is seen by the dotted line around the lowess curve.The conditional # # distribution of Resting Blood Pressure with Age can be evaluated by the vertical line between 
+# dotted variance curve line.This also gives us a boxplot for both variables.
+
+# Coded Scatter plot
+scatterplot(Resting_Blood_Pressure~Age|Sex,data=HeartAttack, main="Blood Pressure Age", xlab="Age", ylab=" Resting Blood Pressure")
+scatterplot(Resting_Blood_Pressure~Serum_Cholesterol,data=HeartAttack, main="Resting Blood Pressure", xlab="Serum Cholesterol", ylab="Resting Blood Pressure")
+
+#Jittered Scatterplot
+plot(jitter(Resting_Blood_Pressure,factor=2)~jitter(Age,factor=2),col="gray",cex=.5,data=HeartAttack)
+with(HeartAttack, {
+  abline(lm(Resting_Blood_Pressure~Age),lwd=3,lty="dashed")
+  lines(lowess(Resting_Blood_Pressure,Age,f=0.2),lwd=3)
+  # least square line is created by abline using the lm function
+})
+
+# Three dimensional scatterplot
+scatter3d(Resting_Blood_Pressure~Age+Serum_Cholesterol,id.n=3,data=HeartAttack)
+# The 3d graph shows Resting blood pressure on y axis and Age and Serum Chaolesterol on the 
+# x axis and z axis.The three furthest points were identified by the Mahalanobis distances
+# (Point of means) 
+
+# Scatterplot Matrices
+pairs(~ as.numeric(Resting_Blood_Pressure) + as.numeric(Serum_Cholesterol) + as.numeric(Age) ,data=HeartAttack)
+```
+
+# Hexbin 
+
+# High Density Scatterplot with Binning
+
+bin<-hexbin(HeartAttack$Age,HeartAttack$Resting_Blood_Pressure,xbins=50) 
+plot(bin,main="Hexagonal Binning")
+
+
+boxplot(Serum_Cholesterol~Sex, data = HeartAttack, lwd = 2, ylab = 'Cholesterol')
+stripchart(Serum_Cholesterol~Sex, vertical = TRUE, data = HeartAttack, 
+    method = "jitter", add = TRUE, pch = 20, col = 'blue')
+
+with(HeartAttack,  
+{plot(Serum_Cholesterol ~ Age)    
+abline(lm(Serum_Cholesterol ~ Age), lcol="red")    
+lines(lowess(Serum_Cholesterol ~ Age), lcol="blue") } ) 
+ 
+ 
+#TRANSFORMATIONS using infant.mortality data set in the UN dataframe of the car package
+```{r}
+# Logarithm Transformations
+UN <- na.omit(UN)
+head(UN)
+par(mfrow=c(1,2))
+with(UN,plot(density(infant.mortality),xlab="Infant Mortality",main="(A)"))
+with(UN,plot(density(log(infant.mortality)),
+                      xlab="base e Infant Mortality",main="(B)"))
+Median_Value=median(UN$infant.mortality)
+Lower_Hinge=quantile(UN$infant.mortality,prob=.25)
+Higher_Hinge=quantile(UN$infant.mortality,.75)
+Tukey_Criterion=(Higher_Hinge-Median_Value)/(Median_Value-Lower_Hinge)
+Tukey_Criterion
+
+Infant_logfunction = log(UN$infant.mortality)
+Median_Value_log=median(Infant_logfunction)
+Lower_Hinge_log=quantile(Infant_logfunction,prob=.25)
+Higher_Hinge_log=quantile(Infant_logfunction,prob=.75)
+Tukey_Criterion_log=(Higher_Hinge_log-Median_Value_log)/(Median_Value_log-Lower_Hinge_log)
+Tukey_Criterion_log
+symbox(~infant.mortality,data=UN) 
+
+#symbox uses the bc function and shows the transformation down and up the 
+                      # ladder.The log function gives the best transformation
+
+```
+#Proportion Transformations using  data set in the Prestige dataframe of the car package
+```{r}
+Prestige <- na.omit(Prestige)
+head(Prestige)
+par(mfrow=c(1,3))
+
+with(Prestige,{
+  plot(density(women),main="(A) Untransformed")
+  plot(density(logit(women),adjust=.75),main="(A) logit")
+  plot(density(asin(sqrt(women/100)),adjust=.75),main="(A) Arcsine Square Root")
+
+})# adjust factor smoothes the multiple modes by the decreasing the bandwidth fraction 
+```
+# Transformations for equalizing variance
+```{r}
+Ornstein <- na.omit(Ornstein)
+head(Ornstein)
+par(mfrow=c(1,3))
+
+spreadLevelPlot(interlocks+1~nation,Ornstein) 
+Boxplot((interlocks+1)~nation,data=Ornstein)
+Boxplot(log(interlocks+1)~nation,data=Ornstein) 
+# The spread is less variable across groups 
+                                                  
+# There are no outliers and within group spread
+                                                 
+ # is less skewed.
+```
+# Transforming Non Linearity using Tukey's Bulging Rule:
+```{r}
+scatterplot(infant.mortality~gdp,data=UN)  
+scatterplot(log(infant.mortality)~log(gdp),data=UN)
+# Notice the relationship is now linear though it might be overcorrecting this relationship.
+scatterplot(sqrt(infant.mortality)~sqrt(gdp),data=UN)
+# Cube root can also be used
+symbox(~infant.mortality,data=UN) 
+symbox(~gdp,data=UN)
+
+
+
+
