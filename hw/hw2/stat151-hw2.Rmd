@@ -1,0 +1,356 @@
+---
+title: "Spring 2017 STAT 151A - HW2"
+author: "Xuanpei Ouyang"
+date: "February 8, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(grid)
+library(readxl)
+library(car)
+```
+
+## Exercise 4.1
+
+```{r}
+x = seq(0.001,4,length.out = 100);
+
+box_cox_power_transformation = function(x, p){
+  if(p == 0){
+    return(log(x))
+  } else {
+    return((x^p - 1)/p)
+  }
+}
+power_transformation = function(x, p){
+  if(p == 0){
+    return(log(x))
+  } else {
+    return(x^p)
+  }
+}
+
+
+x_box_cox = data.frame(
+  x = x,
+  x_neg1 = box_cox_power_transformation(x, -1),
+  x_0 = box_cox_power_transformation(x, 0),
+  x_1 = box_cox_power_transformation(x, 1),
+  x_2 = box_cox_power_transformation(x, 2),
+  x_3 = box_cox_power_transformation(x, 3)
+)
+
+x_power = data.frame(
+  x,
+  power_neg1 = power_transformation(x, -1),
+  power_x_0 =  power_transformation(x, 0),
+  power_x_1 = power_transformation(x, 1),
+  power_x_2 = power_transformation(x, 2),
+  power_x_3 = power_transformation(x, 3)
+)
+
+p1 = ggplot() + 
+  geom_line(data = x_box_cox, aes(x=x, y=x_neg1), colour = "red") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_0), colour = "orange") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_1), colour = "yellow") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_2), colour = "green") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_3), colour = "skyblue") + 
+  xlab("x") + 
+  ylab("x(p)") + 
+  ggtitle("Box Cox Family transformation") + 
+  ylim(-5, 20) +
+  annotate("text", label = "p = -1", colour = "red", x = 3, y = -2) +
+  annotate("text", label = "p = 0", colour = "orange", x = 3, y = 2.5) + 
+  annotate("text", label = "p = 1", colour = "yellow", x = 3, y = 5) + 
+  annotate("text", label = "p = 2", colour = "green", x = 3.3, y = 7) + 
+  annotate("text", label = "p = 3", colour = "skyblue", x = 3, y = 15)
+
+
+
+p2 = ggplot() + 
+  geom_line(data = x_power, aes(x=x, y=power_neg1), colour = "red") +
+  geom_line(data = x_power, aes(x=x, y=power_x_0), colour = "orange") +
+  geom_line(data = x_power, aes(x=x, y=power_x_1), colour = "yellow") +
+  geom_line(data = x_power, aes(x=x, y=power_x_2), colour = "green") +
+  geom_line(data = x_power, aes(x=x, y=power_x_3), colour = "skyblue") + 
+  xlab("x") + 
+  ylab("x^p") + 
+  ggtitle("Ordinary Power transformation") +
+  ylim(-5, 20) +
+  annotate("text", label = "p = -1", colour = "red", x = 3, y = -2) +
+  annotate("text", label = "p = 0", colour = "orange", x = 3, y = 2.5) + 
+  annotate("text", label = "p = 1", colour = "yellow", x = 3, y = 5) + 
+  annotate("text", label = "p = 2", colour = "green", x = 3.3, y = 7) + 
+  annotate("text", label = "p = 3", colour = "skyblue", x = 3, y = 15)
+
+pushViewport(viewport(layout = grid.layout(1, 2)))
+print(p1, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(p2, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+
+```
+From the side-by-side report above, we can observe that  
+**Similarities**: The ranges for both box cox transformation and ordinary power are both (0, +inf). For p > 0 (where p = 1, 2, 3 in this graph), the output of both box cox transformation and ordinary power transformation both increase as x value increase. And as p value gets large, the more rapidly output values increase. For p = 0, the output of box cox transformation and ordinary power transformation are the same. 
+
+**Differences**: For p < 0 (where p = -1 in this graph), the output of box cox transformation increases as the input value gets larger. However, the output of ordinary transformation gets smaller as the input value gets larger.  
+
+
+\pagebreak
+
+## Exercise 4.4
+### Part a
+```{r}
+
+x = seq(-10, 10, length.out = 100)
+yeo_johnson_transformation = function(x, p){
+  y = rep(0, length(x))
+  
+  for(i in 1:length(x)){
+    if(x[i] >= 0){
+      y[i] = box_cox_power_transformation((x[i]+1), p)
+    } else {
+      y[i] = -1*box_cox_power_transformation((1-x[i]), (2-p))
+    }
+  }
+  return(y)
+}
+
+yeo_trans_x_neg1 = yeo_johnson_transformation(x, -1)
+
+yeo_transformed_x = data.frame(
+  yeo_trans_x_neg1 = yeo_johnson_transformation(x, -1),
+  yeo_trans_x_negpoint5 = yeo_johnson_transformation(x, -0.5),
+  yeo_trans_x_0 = yeo_johnson_transformation(x, 0),
+  yeo_trans_x_point5 = yeo_johnson_transformation(x, 0.5),
+  yeo_trans_x_1 = yeo_johnson_transformation(x, 1),
+  yeo_trans_x_2 = yeo_johnson_transformation(x, 2)
+)
+
+ggplot() + 
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_neg1), colour = "red") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_negpoint5), colour = "orange") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_0), colour = "yellow") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_point5), colour = "green") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_1), colour = "skyblue") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_2), colour = "purple") + 
+  xlab("x") + 
+  ylab("x^p") + 
+  ggtitle("Yeo Johnson Power transformation") +
+  ylim(-5, 20) +
+  annotate("text", label = "p = -1", colour = "red", x = 3, y = -5) +
+  annotate("text", label = "p = -0.5", colour = "orange", x = 5, y = -3) + 
+  annotate("text", label = "p = 0", colour = "yellow", x = 7, y = -1) + 
+  annotate("text", label = "p = 0.5", colour = "green", x = 7, y = 4) + 
+  annotate("text", label = "p = 1", colour = "skyblue", x = 7, y = 10) +
+  annotate("text", label = "p = 2", colour = "purple", x = 7, y = 14)
+```
+
+### Part b
+```{r}
+x = seq(0.1, 10, length.out = 100)
+
+yeo_transformed_x = data.frame(
+  yeo_trans_x_neg1 = yeo_johnson_transformation(x, -1),
+  yeo_trans_x_negpoint5 = yeo_johnson_transformation(x, -0.5),
+  yeo_trans_x_0 = yeo_johnson_transformation(x, 0),
+  yeo_trans_x_point5 = yeo_johnson_transformation(x, 0.5),
+  yeo_trans_x_1 = yeo_johnson_transformation(x, 1),
+  yeo_trans_x_2 = yeo_johnson_transformation(x, 2)
+)
+
+p1 = ggplot() + 
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_neg1), colour = "red") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_negpoint5), colour = "orange") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_0), colour = "yellow") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_point5), colour = "green") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_1), colour = "skyblue") +
+  geom_line(data = yeo_transformed_x, aes(x=x, y=yeo_trans_x_2), colour = "purple") + 
+  xlab("x") + 
+  ylab("x^p") + 
+  ggtitle("Yeo Johnson Power transformation for Postive x") +
+  ylim(-5, 20) +
+  annotate("text", label = "p = -1", colour = "red", x = 7, y = -4) +
+  annotate("text", label = "p = -0.5", colour = "orange", x = 7, y = -2) + 
+  annotate("text", label = "p = 0", colour = "yellow", x = 7, y = 3) + 
+  annotate("text", label = "p = 0.5", colour = "green", x = 7, y = 5) + 
+  annotate("text", label = "p = 1", colour = "skyblue", x = 7, y = 9) +
+  annotate("text", label = "p = 2", colour = "purple", x = 3, y = 14)
+
+
+
+x_box_cox = data.frame(
+  x = x,
+  x_neg1 = box_cox_power_transformation(x, -1),
+  x_negpoint5 = box_cox_power_transformation(x, -0.5),
+  x_0 = box_cox_power_transformation(x, 0),
+  x_point5 = box_cox_power_transformation(x, 0.5),
+  x_1 = box_cox_power_transformation(x, 1),
+  x_2 = box_cox_power_transformation(x, 2)
+)
+
+
+p2 = ggplot() + 
+  geom_line(data = x_box_cox, aes(x=x, y=x_neg1), colour = "red") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_negpoint5), colour = "orange") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_0), colour = "yellow") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_point5), colour = "green") +
+  geom_line(data = x_box_cox, aes(x=x, y=x_1), colour = "skyblue") + 
+  geom_line(data = x_box_cox, aes(x=x, y=x_2), colour = "purple") + 
+  xlab("x") + 
+  ylab("x(p)") + 
+  ggtitle("Box Cox Transformation for Positive x") + 
+  ylim(-5, 20) +
+  annotate("text", label = "p = -1", colour = "red", x = 9, y = -2) +
+  annotate("text", label = "p = -0.5", colour = "orange", x = 9, y = 1.5) + 
+  annotate("text", label = "p = 0", colour = "yellow", x = 9, y = 3) + 
+  annotate("text", label = "p = 0.5", colour = "green", x = 7.5, y = 4) + 
+  annotate("text", label = "p = 1", colour = "skyblue", x = 7, y = 8) +
+  annotate("text", label = "p = 2", colour = "purple", x = 4, y = 14)
+
+pushViewport(viewport(layout = grid.layout(1, 2)))
+print(p1, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(p2, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+```
+  
+From the side-by-side report above, we can observe that  
+The range for box cox transformation is strictly postive values, while Yeo Johnson Transformation can take any input value without strictly positive restrictions. Thus Yeo Johnson Transformation transforms all positive input values to positive values while Box Cox Transformation transforms all input values that are greater than 1 to positive output values and transforms input values that are strictly positive but less than 1 to negative output values. A around 0 input for Yeo Johnson transformation will produce 0 value as transformed output while a around 1 input for Box box transformation will produce 0 value as transformed output. The growth trend for them are the same.
+
+
+
+## Problem 2
+Use the Baseball.xlsx uploaded in canvas.
+
+
+### Part (a) Use the variable careerIP to create a histogram
+```{r}
+# Loading the dataset baseball to RStudio
+baseball= read_excel("~/Desktop/STAT 151A/STAT-151A/hw/hw2/baseball.xlsx")
+str(baseball)
+
+ggplot(baseball, aes(x = careerIP)) + 
+  geom_histogram() +
+  ggtitle("Histogram for careerIP in Baseball Dataset")
+```
+
+
+### Part (b) Use symbox() function to predict the various transformation
+```{r}
+symbox(~careerIP, data = baseball)
+```
+From the graph we can see that log transformation produces the least outliers.
+
+### Part (c) Use the Hinge criterian for all the transformations that were displayed by symbox(). Which is the best transformation and why?
+```{r}
+powers = c(-1, -0.5, 0, 0.5, 1)
+careerIP = baseball$careerIP
+
+hinge_ratio = function(data){
+  
+  upper_hinge = quantile(data, prob = 0.75)
+  lower_hinge = quantile(data, prob = 0.25)
+  median = quantile(data, prob = 0.5)
+  return((upper_hinge - median)/(median - lower_hinge))
+}
+
+ratio = rep(0, 5)
+for(i in 1:5) {
+  if(powers[i] == 0){
+    transformed_data = log(careerIP)
+    ratio[i] = hinge_ratio(transformed_data)
+  } else {
+    transformed_data = careerIP^powers[i]
+    ratio[i] = hinge_ratio(transformed_data)
+  }
+}
+hinge_ratios = data.frame(
+  powers = c(-1, -0.5, 0, 0.5, 1),
+  ratio = ratio
+)
+hinge_ratios
+```
+Log Transformation is the best transformation for this dataset because we can see that when powers = 0 (log transformation), the hinge ratio is the closest to 1, which indicate the transformed data is the most symmetric.  
+
+
+### Part (d) Create a  plot between CareerG grouped by league use the spreadLevelPlot() to predict the transformation. Try the suggested transformation. Give your rationale why it works
+
+```{r}
+spreadLevelPlot(careerG~league87, baseball)
+```
+Thus we can know that the suggested power transformation is 2.184073.
+
+```{r}
+# get transformed careerG dataset
+careerG_transformed = box_cox_power_transformation(baseball$careerG, 2.184)
+
+# plot boxplot for original and transformed dataset
+Boxplot(careerG~league87, baseball)
+Boxplot(careerG_transformed~league87, data=baseball)
+
+# plot density plot for original dataset
+with(baseball, {
+  hist(careerG, breaks = "FD", freq = FALSE, ylab = "Density")
+  lines(density(careerG), lwd = 2)
+  rug(careerG)
+  box()
+})
+
+# plot density plot for transformed dataset
+with(baseball, {
+  hist(careerG_transformed, breaks = "FD", freq = FALSE, ylab = "Density")
+  lines(density(careerG_transformed), lwd = 2)
+  rug(careerG_transformed)
+  box()
+})
+
+# plot histogram for original dataset
+ggplot(baseball, aes(x = careerG)) + 
+  geom_histogram() +
+  ggtitle("Histogram for careerG in Baseball Dataset")
+
+# plot histogram for transformed dataset
+ggplot(baseball, aes(x = careerG_transformed)) + 
+  geom_histogram() +
+  ggtitle("Histogram for transformed careerG in Baseball Dataset")
+
+
+r1 = hinge_ratio(careerG_transformed)
+r2 = hinge_ratio(baseball$careerG)
+
+r1
+r2
+
+qqnorm(baseball$careerG)
+qqnorm(careerG_transformed)
+```
+  
+
+As we can see from the decreasing hinge ratio of power transformed data with p = 2.184, the transformed data is tend to be symmetric after transformation.  
+
+The reasoning behind the suggested power transformation might because the original dataset is heavy-tailed and power transform with p = 2 transform the dataset to right skewed. However, from the histogram and density plot of original data, we can see that the original data is also high right skewed.  Thus, the textbook suggests that we should use power transformation with small p since descending the ladder of powers (e.g., to logX) tends to correct a positive skew.  
+
+
+
+Thus, I try to do the log transformation below, plot related plots and calculated it hinge ratio. Here, we can see that the result dataset is slightly left skewed and its hinge value is very close to 1. Since p = 0 transformation overly transform the dataset to left skewed, it seems that a positive small value of p is a good candidate for the transformation of this dataset.
+
+```{r}
+Boxplot(log(careerG)~league87, data=baseball)
+
+# plot density plot for original dataset
+with(baseball, {
+  hist(log(careerG), breaks = "FD", freq = FALSE, ylab = "Density")
+  lines(density(log(careerG)), lwd = 2)
+  rug(log(careerG))
+  box()
+})
+
+ggplot(baseball, aes(x = log(careerG))) + 
+  geom_histogram() +
+  ggtitle("Histogram for transformed careerG in Baseball Dataset")
+
+r3 = hinge_ratio(log(baseball$careerG))
+r3
+
+qqnorm(log(baseball$careerG))
+```

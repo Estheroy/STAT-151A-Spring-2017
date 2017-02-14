@@ -1,0 +1,42 @@
+---
+title: "STAT151A-Lab3"
+author: "Xuanpei Ouyang"
+date: "2/13/2017"
+output: pdf_document
+---
+
+```{r}
+x = c(5,6,3,7,4,2)
+y = c(3.5,3.8,3.1,4,3.2,3)
+x_bar = mean(x)
+x_bar
+y_bar = mean(y)
+y_bar
+X_iY_i = x * y
+X_iY_i
+X_sqr = x ^ 2
+X_sqr
+n = 6
+sum(X_iY_i)
+sum(x^2)
+B = (sum(X_iY_i) - n*x_bar*y_bar) / (sum(x^2) - n*x_bar^2)
+B
+A = y_bar - B*x_bar
+A
+y_hat <- A + B*x
+y_hat
+E <- y - y_hat
+E
+E_sqr = E^2
+E_sqr
+SSR = sum(E_sqr)
+SSR
+RMS = SSR/4
+RMS
+S_xx = sum(x^2) - 6*x_bar^2
+S_xx
+t = B/(sqrt(RMS/S_xx))
+t
+t_critical = qt(0.025, df = 4)
+t_critical
+```
