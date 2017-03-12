@@ -1,0 +1,455 @@
+---
+title: "STAT151 HW4"
+author: "Xuanpei Ouyang 3032360371"
+date: "March 6, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(car)
+options(warn = -1) # surpress the warning messages
+```
+
+```{r}
+# Some seld defined function used for calculation
+find_coeff = function(x, y){
+  n = length(x)
+  B = (sum(x * y)-n*mean(x)*mean(y))/(sum((x - mean(x))^2))
+  A = mean(y) - B*mean(x)
+  return(data.frame(
+    A = A,
+    B = B))
+}
+find_Sxx = function(x) {
+  return(sum((x - mean(x))^2))
+}
+find_RSS = function(x, y, A, B){
+  y_hat = A + B*x
+  return(sum((y - y_hat)^2))
+}
+find_RegSS = function(x, y, A, B){
+  y_hat = A + B*x
+  return(sum((y_hat - mean(y))^2))
+}
+find_TSS = function(y){
+  return(sum((y - mean(y))^2))
+}
+find_RMS = function(RSS,x) {
+  y_hat = RSS/(length(x)-2)
+}
+find_R_squared = function(RegSS, TSS){
+  return(RegSS/TSS)
+}
+find_SE_B = function(RMS, Sxx){
+  return(sqrt(RMS/Sxx))
+}
+```
+
+## Exercise D5.1 
+
+#### (a) Construct a scatterplot for Y and X.
+```{r}
+# create the data table for the 5 sample
+sample = data.frame(
+  consumers = c(1, 1.2, 1.46, 1.65, 2.3),
+  acres = c(1.71, 2.21, 2.09, 2.41, 2.36)
+)
+
+# plot the scatter plot
+scatterplot(acres ~ consumers, data = sample, main = "Household Sahline's dataset", ylab = "Acres/Gardener", xlab = "Consumers/Gardener", reg.line = FALSE)
+```
+
+#### (b) Find A and B for the least-squares regression of Y on X, and draw the least-squares line on the scatterplot. Interpret A and B.
+
+```{r}
+# Compute by self-defined function
+coeff = find_coeff(sample$consumers, sample$acres)
+A = coeff$A
+A
+B = coeff$B
+B
+```
+
+```{r}
+# Use R build in function
+coeff = lm(acres ~ consumers, data = sample)
+summary = summary(coeff)
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+B = summary$coefficients["consumers","Estimate"]
+B
+```
+
+```{r}
+with(sample, {
+  scatterplot(acres ~ consumers, data = sample, main = "Household Sahline's dataset", ylab = "Acres/Gardener", xlab = "Consumers/Gardener", reg.line = FALSE)
+  abline(lm(acres ~ consumers), lwd=3, lty="dashed")
+})
+```
+
+The value of A means the value of acres per gardener is `r A` when the consumers per gardener is 0.
+The value of B means the increase in acres per gardener is `r B` with every one unit of increase of the acres per gardener.
+
+
+#### (c) Calculate the standard error of the regression, SE, and the correlation coeffcient, r. Interpret these statistics.
+
+```{r}
+r_squared = summary$r.squared
+r = sqrt(r_squared)
+r
+standard_error = summary$sigma
+standard_error 
+```
+
+The correlation coefficient is `r r` between acres per gardener and consumers per gardener and it indicates that there is a fairly strong relationship between acres per gardener and consumers per gardener.
+
+The standard error is about `r standard_error` and the small value of standard error indicates that the fitted linear regression line is good and the prediction made by the regression line is pretty accurate.
+
+
+## Exercise D5.2
+```{r}
+# read the related dataset
+household = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw4/Sahlins.txt")
+
+# fit a linear regresison model with build in function
+# and calculate A, B, r , standard error
+coeff = lm(acres ~ consumers, data = household)
+summary = summary(coeff)
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+B = summary$coefficients["consumers","Estimate"]
+B
+r_squared = summary$r.squared
+r = sqrt(r_squared)
+r
+standard_error = summary$sigma
+standard_error
+
+# plot the scatter plot with regression line
+with(household, {
+  scatterplot(acres ~ consumers, data = household, main = "Household Sahline's dataset with Fourth Household", ylab = "Acres/Gardener", xlab = "Consumers/Gardener", reg.line = FALSE)
+  abline(lm(acres ~ consumers), lwd=3, lty="dashed")
+})
+```
+
+The value of A means the value of acres per gardener is `r A` when the consumers per gardener is 0.
+The value of B means the increase in acres per gardener is `r B` with every one unit of increase of the consumers per gardener.
+
+The correlation coefficient is `r r` between acres per gardener and consumers per gardener and it indicates that the relationship between acres per gardener and consumers per gardener is very weak.
+
+The standard error is about `r standard_error` and it indicates that the fitted linear regression line is not very accurate for predicting the response variable acres per gardener.
+
+The regression line here has a positive slope and a intercept around 0. This suggests that the redistribution in this society is purely through the market, each household should have to work in proportion to its consumption needs.
+
+```{r}
+household_wo_4th = household[-4,]
+coeff = lm(acres ~ consumers, data = household_wo_4th)
+summary = summary(coeff)
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+B = summary$coefficients["consumers","Estimate"]
+B
+r_squared = summary$r.squared
+r = sqrt(r_squared)
+r
+standard_error = summary$sigma
+standard_error
+
+with(household_wo_4th, {
+  scatterplot(acres ~ consumers, data = household_wo_4th, main = "Household Sahline's dataset without Fourth Household", ylab = "Acres/Gardener", xlab = "Consumers/Gardener", reg.line = FALSE)
+  abline(lm(acres ~ consumers), lwd=3, lty="dashed")
+})
+
+```
+
+Now, the value of A means the value of acres per gardener is `r A` when the consumers per gardener is 0 and the value of B means the increase in acres per gardener is `r B` with every one unit of increase of the acres per gardener.
+
+After removing the fourth household, the correlation coefficient r increase from 0.376 to 0.571 and standard error decrease from 0.454 to 0.368. After removing the fourth household, we basically have the same conclusion as when we keep the fourth household, the fitted regression model is more accurate and reveals stronger linear relationship since the fourth household data point is a outlier.
+
+```{r}
+coeff1 = lm(acres ~ consumers, data = household)
+summary1 = summary(coeff1)
+summary1
+
+coeff2 = lm(acres ~ consumers, data = household_wo_4th)
+summary2 = summary(coeff2)
+summary2
+```
+
+If we conduct the t test for these two models above, we can see that the p value - 0.01 for the response variable in the model fitted without the fourth household is much less than that - 0.1 in the model fitted with the fourth household. Thus, if we use alpha = 0.05, we can reject the null hypothesis of no linear regression in the model2 but fail to reject the null hypothesis in model1. 
+I think the regression model fitted without the fourth household does a better job of summarizing the relationship between acres per gardener and consumers per gardener and tßhe fitted regression model without the fourth household reveals a linear relationship between acres per gardener and consumers per gardener. 
+
+
+## Exercise D6.1 Assuming that the observations were independently sampled, and the standard error SE(B) of the slope coeffcient, and calculate a 90-percent confidence interval for the population slope.
+
+```{r}
+coeff = lm(acres ~ consumers, data = sample)
+summary = summary(coeff)
+B = summary$coefficients["consumers","Estimate"]
+SE_B = summary$coefficients["consumers","Std. Error"]
+SE_B
+df = 3
+# to find 90% confidence interval, we find the quantile when prob = 0.95
+t_c = qt(0.95, df)
+t_c
+lower_bound = B - t_c*SE_B
+upper_bound = B + t_c*SE_B
+lower_bound
+upper_bound
+```
+
+Assuming that the observations are independently sampled, the standard error SE(B) is `r SE_B` and the 90% Confidence Interval for beta is [`r lower_bound`,`r upper_bound`]
+
+## Exercise D6.2 Find the standard errors of the least-squares intercept and slope. Can we conclude that the population slope is greater than zero? Can we conclude that the intercept is greater than zero? Repeat these computations omitting the fourth household.
+
+```{r}
+coeff = lm(acres ~ consumers, data = household)
+summary = summary(coeff)
+
+# standard errors of the intercept
+SE_A = summary$coefficients["(Intercept)","Std. Error"]
+SE_A
+
+# standard errors of the slope
+SE_B = summary$coefficients["consumers","Std. Error"]
+SE_B
+
+# find value A
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+
+# find value B
+B = summary$coefficients["consumers","Estimate"]
+B
+
+# t statistics for A
+t_A = A/SE_A
+t_A
+
+# t statistics for B
+t_B = B/SE_B
+t_B  
+
+df = length(household$consumers) - 2
+# find the t for quantile = 0.05 since it's one sided test
+t_c_0.95 = qt(0.95, df) 
+t_c_0.95
+summary
+```
+
+1. To check if the population slope is greater than zero, we conduct a one sided t-test with alpha = 0.05.
+
+* Null Hypothesis: beta = 0, the population slope is equal 0.
+* Alternative Hypothesis: beta > 0, the population slope is greater than 0.  
+
+From the output of summary, since the t-statistics for slope B is `r t_B` and is less than the critical t value `r t_c_0.95`. Therefore, we fail to reject the null hypothesis and conclude that the population slope is not greater than 0 and there is no linear relationship between consumers per gardener and acres per gardener.
+
+2. To check if the intercept is greater than zero, we conduct a one sided t-test with alpha = 0.05.
+
+* Null Hypothesis: alpha = 0, the intercept is equal to 0.
+* Alternative Hypothesis: alpha > 0, the intercept is greater than 0.
+
+From the output of summary, since the t-statistics for slope A is `r t_A` and is greater than the critical t value `r t_c_0.95`. Therefore, we reject the null hypothesis and conclude that the intercept is greater than 0.
+
+
+```{r}
+coeff = lm(acres ~ consumers, data = household_wo_4th)
+summary = summary(coeff)
+
+# standard errors of the intercept
+SE_A = summary$coefficients["(Intercept)","Std. Error"]
+SE_A
+
+# standard errors of the slope
+SE_B = summary$coefficients["consumers","Std. Error"]
+SE_B
+
+# find value A
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+
+# find value B
+B = summary$coefficients["consumers","Estimate"]
+B
+
+# t statistics for A
+t_A = A/SE_A
+t_A
+
+# t statistics for B
+t_B = B/SE_B
+t_B  
+
+df = length(household_wo_4th$consumers) - 2
+t_c_0.95 = qt(0.95, df) 
+t_c_0.95
+summary
+```
+
+3. To check if the population slope is greater than zero, we conduct a one sided t-test with alpha = 0.05.
+
+* Null Hypothesis: beta = 0, the population slope is equal 0.
+* Alternative Hypothesis: beta > 0, the population slope is greater than 0.  
+
+From the output of summary, since the t-statistics for slope B is `r t_B` and is greater than the critical t value `r t_c_0.95`. Therefore, we reject the null hypothesis and conclude that the population slope is greater than 0 and there is a linear relationship between consumers per gardener and acres per gardener.
+
+4. To check if the intercept is greater than zero, we conduct a one sided t-test with alpha = 0.05.
+
+* Null Hypothesis: alpha = 0, the intercept is equal to 0.
+* Alternative Hypothesis: alpha > 0, the intercept is greater than 0.
+
+From the output of summary, since the t-statistics for slope A is `r t_A` and is greater than the critical t value `r t_c_0.95`. Therefore, we reject the null hypothesis and conclude that the intercept is greater than 0.
+
+
+## Exercise D6.3 Construct 95-percent confidence intervals for and in each of the least-squares simple-regression analyses that you performed in Exercise D5.3.
+
+Here I choose Freedman as my dataset.
+```{r}
+Freedman = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw4/Freedman.txt")
+```
+
+1. Simple regression on population and crime
+
+```{r}
+# plot the scatterplot for population and crime
+with(Freedman, {
+  scatterplot(crime ~ population, data = Freedman, main = "Population vs. Crime", ylab = "Crime", xlab = "Population", reg.line = FALSE)
+  abline(lm(crime ~ population), lwd=3, lty="dashed")
+})
+
+# fitting the linear regression model for population and crime
+coeff = lm(crime ~ population, data = Freedman)
+summary = summary(coeff)
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+B = summary$coefficients["population","Estimate"]
+B
+r_squared = summary$r.squared
+r = sqrt(r_squared)
+r
+standard_error = summary$sigma
+standard_error 
+
+#standard errors of the intercept
+SE_A = summary$coefficients["(Intercept)","Std. Error"]
+SE_A
+#standard errors of the slope
+SE_B = summary$coefficients["population","Std. Error"]
+SE_B
+
+# construct the 0.95 confidence interval for B
+df = length(Freedman$population) - 2
+t_c = qt(0.975, df)
+t_c
+lower_bound_B = B - t_c*SE_B
+upper_bound_B = B + t_c*SE_B
+lower_bound_B
+upper_bound_B
+
+# construct the 0.95 confidence interval for A
+lower_bound_A = A - t_c*SE_A
+upper_bound_A = A + t_c*SE_A
+lower_bound_A
+upper_bound_A
+```
+
+For the linear regression model between population and crime, the 95% Confidence Interval for beta is [`r lower_bound_B`,`r upper_bound_B`] and the 95% confidence interval for alpha is [`r lower_bound_A`,`r upper_bound_A`]
+
+
+
+2. Simple regression on nonwhite and crime
+```{r}
+# plot the scatterplot for nonwhite and crime
+with(Freedman, {
+  scatterplot(crime ~ nonwhite, data = Freedman, main = "nonwhite vs. Crime", ylab = "Crime", xlab = "nonwhite", reg.line = FALSE)
+  abline(lm(crime ~ nonwhite), lwd=3, lty="dashed")
+})
+
+# fitting the linear regression model for nonwhite and crime
+coeff = lm(crime ~ nonwhite, data = Freedman)
+summary = summary(coeff)
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+B = summary$coefficients["nonwhite","Estimate"]
+B
+r_squared = summary$r.squared
+r = sqrt(r_squared)
+r
+standard_error = summary$sigma
+standard_error 
+
+#standard errors of the intercept
+SE_A = summary$coefficients["(Intercept)","Std. Error"]
+SE_A
+#standard errors of the slope
+SE_B = summary$coefficients["nonwhite","Std. Error"]
+SE_B
+
+# construct the 0.95 confidence interval for B
+df = length(Freedman$crime) - 2
+t_c = qt(0.975, df)
+t_c
+lower_bound_B = B - t_c*SE_B
+upper_bound_B = B + t_c*SE_B
+lower_bound_B
+upper_bound_B
+
+# construct the 0.95 confidence interval for A
+lower_bound_A = A - t_c*SE_A
+upper_bound_A = A + t_c*SE_A
+lower_bound_A
+upper_bound_A
+```
+
+For the linear regression model between nonwhite and crime, the 95% Confidence Interval for beta is [`r lower_bound_B`,`r upper_bound_B`] and the 95% confidence interval for alpha is [`r lower_bound_A`,`r upper_bound_A`]
+
+
+
+3. Simple regression on density and crime
+
+```{r}
+# plot the scatterplot for density and crime
+with(Freedman, {
+  scatterplot(crime ~ density, data = Freedman, main = "density vs. Crime", ylab = "Crime", xlab = "density", reg.line = FALSE)
+  abline(lm(crime ~ density), lwd=3, lty="dashed")
+})
+
+# fitting the linear regression model for density and crime
+coeff = lm(crime ~ density, data = Freedman)
+summary = summary(coeff)
+A = summary$coefficients["(Intercept)","Estimate"]
+A
+B = summary$coefficients["density","Estimate"]
+B
+r_squared = summary$r.squared
+r = sqrt(r_squared)
+r
+standard_error = summary$sigma
+standard_error 
+
+#standard errors of the intercept
+SE_A = summary$coefficients["(Intercept)","Std. Error"]
+SE_A
+#standard errors of the slope
+SE_B = summary$coefficients["density","Std. Error"]
+SE_B
+
+# construct the 0.95 confidence interval for B
+df = length(Freedman$crime) - 2
+t_c = qt(0.975, df)
+t_c
+lower_bound_B = B - t_c*SE_B
+upper_bound_B = B + t_c*SE_B
+lower_bound_B
+upper_bound_B
+
+# construct the 0.95 confidence interval for A
+lower_bound_A = A - t_c*SE_A
+upper_bound_A = A + t_c*SE_A
+lower_bound_A
+upper_bound_A
+```
+
+For the linear regression model between density and crime, the 95% Confidence Interval for beta is [`r lower_bound_B`,`r upper_bound_B`] and the 95% confidence interval for alpha is [`r lower_bound_A`,`r upper_bound_A`]
