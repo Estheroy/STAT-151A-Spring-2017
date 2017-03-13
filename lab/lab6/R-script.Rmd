@@ -1,0 +1,152 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+### Summary statistics
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(readr)
+housing <- read_delim("~/Desktop/STAT 151A/STAT-151A/lab/lab6/housing.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+attach(housing)
+```
+
+
+```{r}
+
+summary(housing)
+fit = lm(price ~ sqft + bedrooms + baths)
+summary(fit)
+```
+### Residuals, Confidence interval, fitted value
+```{r}
+coefficients(fit) # model coefficients
+confint(fit,c("sqft","bedrooms"), level=0.95) # CIs for model parameters 
+#fitted(fit) # predicted values
+#residuals(fit) # residuals
+
+```
+### Getting them directly from the model 
+
+
+```{r}
+#fit$coefficients
+#fit$residuals
+summary(fit)$r.squared
+summary(fit)$adj.r.squared
+summary(fit)$f
+```
+
+
+
+### Adjusted R-square and Predicted R-square 
+
+```{r, include=FALSE}
+#install.packages("MPV")
+
+```
+
+```{r}
+library("MPV")
+PRESS(fit)
+# OR 
+
+pr <- residuals(fit)/(1 - lm.influence(fit)$hat)
+    PRESS1 <- sum(pr^2)
+    PRESS1
+    
+fit_anova <- anova(fit)
+tss <- sum(fit_anova$"Sum Sq")
+# predictive R^2
+pred.r.squared <- 1 - PRESS1/(tss)
+pred.r.squared
+summary(fit)$adj.r.squared
+```
+
+
+
+### Dummy variable regression 
+
+```{r}
+# Dummy Variable 
+fit_dummy = lm(price ~ sqft+bedrooms+baths+City)
+summary(fit_dummy)
+plot(fit_dummy)
+```
+### AIC and BIC 
+
+
+```{r}
+data(swiss)
+attach(swiss)
+lm.swiss1 <- lm(Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality)
+lm.swiss2 <- lm(Fertility ~ Agriculture  + Education + Catholic + Infant.Mortality)
+# Good model is with lowest AIC/BIC
+AIC(lm.swiss1)
+AIC(lm.swiss2)
+# So here fit_dummy is better than fit. 
+BIC(lm.swiss1)
+BIC(lm.swiss2)
+
+```
+
+
+
+### Model selection using  AIC and BIC criteria 
+
+```{r, message=FALSE, warning=FALSE}
+attach(swiss)
+library(nlme)
+step(lm(Fertility ~ 1), Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality, direction = "forward")
+
+n= nrow(swiss)
+# Backward selection with BIC 
+
+step(lm(Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality),  direction = "backward",trace=1,k=log(n))
+```
+
+### Another example 
+
+
+```{r}
+attach(housing)
+step(lm(price ~ 1), price~ sqft + bedrooms + baths + City, direction = "forward")
+```
+
+
+```{r}
+attach(housing)
+n=nrow(housing)
+step(lm(price~ sqft + bedrooms + baths + City),price~1 , direction = "backward",k=log(n))
+```
+
+
+
+
+```{r}
+colname<-c("CRIM","ZN","INDUS","CHAS","NOX","RM","AGE","DIS","RAD","TAX","PTRATIO","B","LSTAT","MEDV")
+
+#names(housing_boston)<-colname
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
