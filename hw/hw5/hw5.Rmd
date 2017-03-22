@@ -1,0 +1,183 @@
+---
+title: "STAT151A - hw5"
+author: "Xuanpei Ouyang (Esther)"
+date: "March 15, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+library(effects)
+library(fmsb)
+library(dplyr)
+```
+
+
+#### (a) Construct dummy regressors for the factor or factors and fit an additive dummy-regression model. Use an incremental F-test to test the null hypothesis that each factor has no effect. Explain what each regression coeffcient means. If there is a single factor in the model, write out the regression equation for each category of the factor.
+
+
+```{r}
+duncan = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw5/Duncan.txt")
+summary(duncan)
+
+# Train the full model for duncan dataset
+duncan_model = lm(prestige~income+education+type, data = duncan)
+summary(duncan_model)
+
+# Anova table for duncan full model
+anova(duncan_model)
+
+# show the dummy variable construction
+contrasts(duncan$type)
+
+# Train the null model for duncan dataset
+duncan_model_null = lm(prestige~income+education, data=duncan)
+summary(duncan_model_null)
+```
+
+Since for the region response variable, I have 3 categories, I use 2 parameters to construct the dummy variables.
+
+|         | D1 | D2 |
+|---------|:--:|----|
+| bc      | 0  | 0  | 
+| prof    | 1  | 0  |
+| wc      | 0  | 1  |
+
+
+X_1: Income
+
+X_2: Education
+
+Model: $\hat{Y_i} = -0.18503 + 0.59755 X_1 + 0.34532 X_2 + 16.65751 D_1 -14.66113 D_2$
+
+
+Blue Collar: $\hat{Y_i} = -0.18503 + 0.59755 X_1 + 0.34532 X_2$
+
+Professional: $\hat{Y_i} = 16.47248 + 0.59755 X_1 + 0.34532 X_2$
+
+White Collar: $\hat{Y_i} = -14.84616 + 0.59755 X_1 + 0.34532 X_2$
+
+
+
+To test the partial effects of type of occupation, conduct F test with $H_0$ is no effect of occupation type on Prestige keeping income and education is kept constant.
+Here, null hypothesis is the null model without type effect and alternative hypothesis is the full model with type effect.
+
+$H_0$: $\gamma_1 = \gamma_2 = 0$
+
+$H_a$: At least one of $\gamma_1$, $\gamma_2$ is not zero.
+
+$F_0 = \frac{n-k-1}{q} \frac{{R_1}^2 - {R_0}^2}{1-{R_1}^2}$
+
+where $n-k-1 = 45-4-1 = 40$  
+
+```{r}
+dim(duncan)
+F_0 = ((45-4-1)/2)*((0.9131 - 0.8282)/(1-0.9131))
+F_0
+```
+
+Therefore, 
+$F_0 = \frac{n-k-1}{q} \frac{{R_1}^2 - {R_0}^2}{1-{R_1}^2}$
+
+$= \frac{45-4-1}{2} \frac{{0.9131}^2 - {0.8282}^2}{1-{0.9131}^2}$ 
+
+$= `r F_0`$
+
+
+If the null model is significantly different from the full mode, then $R_1 >> R_0$ and $F_0$ will be much higher.
+
+F critical value for $df = 2, 40$ is `r F_c = qf(.95, df1=2, df2=40)`
+
+Since $F_0$ = `r F_0` is much less than $F_c$ = `r F_c`, I reject the null hypothesis about the null model.
+
+And I can conclude that the type also has effects on prestige and our model is: $\hat{Y_i} = -0.18503 + 0.59755 X_1 + 0.34532 X_2 + 16.65751 D_1 -14.66113 D_2$
+
+$\alpha = -0.1853$ indicates the value of prestige when the income and education are all zero.
+
+$\beta_0 = 0.59755$ means with every unit increase in income (one thousand dollar) and keeping all the other variables constant, the person will have $\beta_0 = 0.59755$ unit increase in prestige.
+
+$\beta_0 = 0.34532$ means with every unit increase in education (years) and keeping all the other variables constant, the person will have $\beta_0 = 0.34532$ unit increase in prestige.
+
+$\gamma_1 = 16.65751$ indicates, for profession occupation, compared to blue collar, the value of prestige will increase when the income and education are all zeros.
+
+$\gamma_0 = -14.66113$ indicates, for white collar occupation, compared to blue collar,  the value of prestige will increase when the income and education are all zeros. 
+
+#### (b) Now include interaction regressors in the model, allowing each quantitative explanatory variable to interact with each factor. Test each interaction by an incremental F-test. If there is a single factor in the model, write out the regression equation for each category of the factor, and confirm that you get the same results (within rounding error) as you obtain by performing the regression on the quantitative explanatory variables separately for each category of the factor.
+
+
+```{r}
+duncan_interact_model = lm(prestige~income+education+type+education:type+
+                             income:type, data = duncan)
+summary(duncan_interact_model)
+
+# Anova table for duncan interaction model
+anova(duncan_interact_model)
+```
+
+F-incremental Table
+
+|    Source     | Null Hypothesis | p-value |
+|---------|:---------------------------:|---------|
+| Income      | $\beta_1=0\|\delta_{11} = \delta_{12} = 0$  | < 2.2e-16  | 
+| Education    | $\beta_2=0\|\delta_{21} = \delta_{22} = 0$   | 4.071e-09  |
+| Type      |  $\gamma_1=\gamma_2=0\|\delta_{11} = \delta_{12} = \delta_{21} = \delta_{22} = 0$ | 1.495e-06  |
+| Income*Type      |$\delta_{11} = \delta_{12} = 0$  | 0.6709  |
+| Education*Type      | $\delta_{21} = \delta_{22} = 0$  |0.1502  |
+
+
+Since the p-value for interaction terms are all not small enough, the interaction between education and type and the interaction between income and type are both insignificant.
+
+And the final model is the same as the model I obtained from part (a).
+
+```{r}
+prof_duncan = Duncan %>% filter(type == "prof")
+wc_duncan = Duncan %>% filter(type == "wc")
+bc_duncan = Duncan %>% filter(type == "bc")
+
+prof_model = lm(prestige~income+education, prof_duncan)  
+summary(prof_model)
+
+wc_model = lm(prestige~income+education, wc_duncan)  
+summary(wc_model)
+
+bc_model = lm(prestige~income+education, bc_duncan)  
+summary(bc_model)
+```
+
+prof model: $\hat{Y_i} = 28.0573 + 0.4143 X_1 + 0.3382 X_2$
+
+wc_model: $\hat{Y_i} = -10.9937 + 0.4231 X_1 + 0.4264 X_2$
+
+bc_model: $\hat{Y_i} = -3.9505 + 0.7834 X_1 +  0.3196 X_2$
+
+By comparing the Anova table (F-incremntal table) and the result obtained by performing the regression on the quantitative explanatory variables seperately for each category of the factor (ignore rounding error), I get the same results that the interaction between education and type and the interaction between income and type are both insignificant.
+
+#### (c) Fit a final model to the data that includes the statistically significant effects. If there are interactions in this model, construct an effect display for each high-order term in the model.
+
+
+From part b, I can conclude that there is no interaction. 
+
+```{r}
+plot(allEffects(duncan_interact_model)) 
+# there is no interaction but here I still plot the effect display for 
+# high-order terms in the model just for understanding.
+summary(duncan_interact_model)
+vif(duncan_interact_model)
+```
+
+In our dataset, I can see there is a discrepency between the model I obtained from full model with interaction and the model I obtained from full model. By checking variance inflation factors for our linear models with interact, I can see that the discrepency might because there is high multicollinearity between education and education:type interaction term. 
+
+
+Therefore, I use stepwise regression with BIC.  
+
+```{r}
+n = dim(duncan)[1]
+BIC_model = step(duncan_interact_model, Prestige~1 , direction = "backward", 
+                 k = log(n))
+```
+The final model I obtained from stepwise regression with BIC is
+
+X_1: income
+
+Final Model: $\hat{Y_i} = -0.18503 + 0.59755 X_1 + 0.34532 X_2 + 16.65751 D_1 -14.66113 D_2$

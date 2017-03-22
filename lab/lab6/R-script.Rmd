@@ -112,7 +112,11 @@ step(lm(Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mo
 
 ```{r}
 attach(housing)
+# original model is the price 
 step(lm(price ~ 1), price~ sqft + bedrooms + baths + City, direction = "forward")
+# Since sqft have the lowest AIC score, we first include the sqft
+# then include city
+# then include b
 ```
 
 
@@ -120,6 +124,7 @@ step(lm(price ~ 1), price~ sqft + bedrooms + baths + City, direction = "forward"
 attach(housing)
 n=nrow(housing)
 step(lm(price~ sqft + bedrooms + baths + City),price~1 , direction = "backward",k=log(n))
+# Here, if we set "k = log(n)", then the AIC shown by the function is actually the BIC value
 ```
 
 
@@ -127,13 +132,27 @@ step(lm(price~ sqft + bedrooms + baths + City),price~1 , direction = "backward",
 
 ```{r}
 colname<-c("CRIM","ZN","INDUS","CHAS","NOX","RM","AGE","DIS","RAD","TAX","PTRATIO","B","LSTAT","MEDV")
+housing_boston <- read_csv("~/Desktop/STAT 151A/STAT-151A/lab/lab6/housing_boston.csv")
+names(housing_boston)<-colname
 
-#names(housing_boston)<-colname
+summary(housing_boston)
 ```
 
 
+## Fit a model
 
+```{r}
+attach(housing_boston)
 
+fit_boston = lm(MEDV ~ CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + B + LSTAT)
+summary_fit_boston = summary(fit_boston)
+```
+
+# Adjusted R-square and Predicted R-square
+```{r}
+summary_fit_boston$r.squared
+summary_fit_boston$adj.r.squared
+```
 
 
 
