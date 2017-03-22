@@ -104,7 +104,7 @@ step(lm(Fertility ~ 1), Fertility ~ Agriculture + Examination + Education + Cath
 n= nrow(swiss)
 # Backward selection with BIC 
 
-step(lm(Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality),  direction = "backward",trace=1,k=log(n))
+step(lm(Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality),  direction = "backward",trace=1, k=log(n))
 ```
 
 ### Another example 
@@ -127,7 +127,64 @@ step(lm(price~ sqft + bedrooms + baths + City),price~1 , direction = "backward",
 # Here, if we set "k = log(n)", then the AIC shown by the function is actually the BIC value
 ```
 
+#Answer the following questions using boston_housing dataset. Here MEDV is the y variable.
 
+## 1.Do forward and Backward model selection using AIC. Are the model obtained from forward and backward selection are same?
+```{r}
+housing_boston <- read.csv("housing_boston.csv")
+colname<-c("CRIM","ZN","INDUS","CHAS","NOX","RM","AGE","DIS","RAD","TAX",
+           "PTRATIO","B","LSTAT","MEDV")
+names(housing_boston)<-colname
+form <- MEDV ~ CRIM +ZN+INDUS+CHAS+NOX+RM+AGE+DIS+RAD+TAX+PTRATIO+B+LSTAT
+fit1 <- lm(form,housing_boston)
+AICForward <- step(lm(MEDV ~1,data = housing_boston),form,direction = "forward")
+AICBackward <- step(fit1,MEDV ~ 1,direction = "backward")
+aicForward <- AIC(AICForward)
+aicBackward <- AIC(AICBackward)
+AICForward
+AICBackward
+```
+
+## 2.Do forward and Backward model selection using BIC. Are the model obtained from forward and backward selection are same?
+```{r}
+BICForward <- step(lm(MEDV ~ 1,data = housing_boston),form,
+                    direction = "forward",k = log(13))
+BICBackward <- step(fit1, MEDV ~ 1 , direction = "backward",k=log(13))
+bicForward <- BIC(BICForward)
+bicBackward <- BIC(BICBackward)
+BICForward
+BICBackward
+
+```
+## 3.Compare the forward model from Q1 and Q2.
+```{r}
+AICForward
+BICForward
+
+aicForward
+bicForward
+```
+## 4.Compare the backward models from Q1 and Q2.
+```{r}
+AICBackward
+BICBackward
+
+aicBackward
+bicBackward
+```
+## 5.See if all variables obtained in the forward AIC model is significant or not ?
+```{r}
+AICForward
+summary(fit1)
+```
+## 6.Get a 95% confidence interval for the variables for forward AIC model.
+```{r}
+fit <- lm(formula = MEDV ~ LSTAT + RM + PTRATIO + DIS + NOX + CHAS + 
+    B + ZN + CRIM + RAD + TAX, data = housing_boston)
+confint(fit,c("LSTAT", "RM", "PTRATIO", "DIS", "NOX", "CHAS","B","ZN","CRIM",
+"RAD","TAX"), level=0.95)
+
+```
 
 
 ```{r}
@@ -138,21 +195,6 @@ names(housing_boston)<-colname
 summary(housing_boston)
 ```
 
-
-## Fit a model
-
-```{r}
-attach(housing_boston)
-
-fit_boston = lm(MEDV ~ CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + B + LSTAT)
-summary_fit_boston = summary(fit_boston)
-```
-
-# Adjusted R-square and Predicted R-square
-```{r}
-summary_fit_boston$r.squared
-summary_fit_boston$adj.r.squared
-```
 
 
 

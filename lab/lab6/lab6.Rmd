@@ -1,0 +1,87 @@
+---
+title: "Discussion 6"
+author: "Xuanpei Ouyang (Esther)"
+date: "March 21, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+```
+
+
+#### (1) Do forward and Backward model selection using AIC. Are the model obtained from forward and backward selection are same?
+```{r}
+housing_boston = read_csv("~/Desktop/STAT 151A/STAT-151A/lab/lab6/housing_boston.csv")
+colname = c("CRIM","ZN","INDUS","CHAS","NOX","RM","AGE","DIS","RAD","TAX","PTRATIO","B","LSTAT","MEDV")
+names(housing_boston) = colname
+summary(housing_boston)
+
+lm_object = MEDV~CRIM+ZN+INDUS+CHAS+NOX+RM+AGE+DIS+RAD+TAX+PTRATIO+B+LSTAT
+housing_boston_model = lm(lm_object, housing_boston)
+
+AIC_forward = step(lm(MEDV ~ 1, data = housing_boston), lm_object, direction = "forward")
+AIC_backward = step(housing_boston_model, MEDV ~ 1, direction = "backward")
+
+AIC_forward_score = AIC(AIC_forward)
+AIC_backward_score = AIC(AIC_backward)
+
+AIC_forward_score
+AIC_backward_score
+```
+The forward model and backward model are the same.
+
+
+
+#### (2) Do forward and Backward model selection using BIC. Are the model obtained from forward and backward selection are same?
+```{r}
+# Find n
+n = dim(housing_boston)[2]-1
+n
+BIC_forward = step(lm(MEDV ~ 1,data = housing_boston),lm_object,
+                    direction = "forward",k = log(n))
+BIC_backward = step(housing_boston_model, MEDV ~ 1 , direction="backward", k=log(n))
+BIC_forward_score = BIC(BIC_forward)
+BIC_backward_score = BIC(BIC_backward)
+BIC_forward
+BIC_backward
+```
+The forward model and backward model are the same.
+
+
+
+#### (3) Compare the forward model from Q1 and Q2.
+```{r}
+AIC_forward
+BIC_forward
+```
+Therefore, we can see that the forward model from Q1 and Q2 are the same.
+
+
+
+#### (4) Compare the backward models from Q1 and Q2.
+```{r}
+AIC_backward
+BIC_backward
+```
+Therefore, we can see that the backward model from Q1 and Q2 are the same.
+
+
+
+#### (5) See if all variables obtained in the forward AIC model is significant or not ?
+```{r}
+AIC_forward
+summary(housing_boston_model)
+```
+Yes, all variables obtained in the forward AIC model are significant.
+
+
+
+#### 6.Get a 95% confidence interval for the variables for forward AIC model.
+```{r}
+housing_boston_model = lm(formula = MEDV~LSTAT+RM+PTRATIO+DIS+NOX+CHAS+B+ZN+
+                            CRIM+RAD+TAX, data = housing_boston)
+confint(housing_boston_model, c("LSTAT", "RM", "PTRATIO", "DIS", "NOX","CHAS","B","ZN","CRIM","RAD","TAX"), level = 0.95)
+```
+Therefore, the 95% confidence interval for the variables for forward AIC model is shown above.

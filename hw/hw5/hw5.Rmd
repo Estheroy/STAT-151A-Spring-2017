@@ -49,6 +49,10 @@ X_1: Income
 
 X_2: Education
 
+D_1: type prof
+
+D_2: type wc
+
 Model: $\hat{Y_i} = -0.18503 + 0.59755 X_1 + 0.34532 X_2 + 16.65751 D_1 -14.66113 D_2$
 
 
@@ -89,19 +93,19 @@ If the null model is significantly different from the full mode, then $R_1 >> R_
 
 F critical value for $df = 2, 40$ is `r F_c = qf(.95, df1=2, df2=40)`
 
-Since $F_0$ = `r F_0` is much less than $F_c$ = `r F_c`, I reject the null hypothesis about the null model.
+Since $F_0$ = `r F_0` is much greater than $F_c$ = `r F_c`, I reject the null hypothesis about the null model.
 
 And I can conclude that the type also has effects on prestige and our model is: $\hat{Y_i} = -0.18503 + 0.59755 X_1 + 0.34532 X_2 + 16.65751 D_1 -14.66113 D_2$
 
 $\alpha = -0.1853$ indicates the value of prestige when the income and education are all zero.
 
-$\beta_0 = 0.59755$ means with every unit increase in income (one thousand dollar) and keeping all the other variables constant, the person will have $\beta_0 = 0.59755$ unit increase in prestige.
+$\beta_1 = 0.59755$ means with every unit increase in income (one thousand dollar) and keeping all the other variables constant, the person will have $\beta_0 = 0.59755$ unit increase in prestige.
 
-$\beta_0 = 0.34532$ means with every unit increase in education (years) and keeping all the other variables constant, the person will have $\beta_0 = 0.34532$ unit increase in prestige.
+$\beta_2 = 0.34532$ means with every unit increase in education (years) and keeping all the other variables constant, the person will have $\beta_0 = 0.34532$ unit increase in prestige.
 
 $\gamma_1 = 16.65751$ indicates, for profession occupation, compared to blue collar, the value of prestige will increase when the income and education are all zeros.
 
-$\gamma_0 = -14.66113$ indicates, for white collar occupation, compared to blue collar,  the value of prestige will increase when the income and education are all zeros. 
+$\gamma_2 = -14.66113$ indicates, for white collar occupation, compared to blue collar,  the value of prestige will decrease when the income and education are all zeros. 
 
 #### (b) Now include interaction regressors in the model, allowing each quantitative explanatory variable to interact with each factor. Test each interaction by an incremental F-test. If there is a single factor in the model, write out the regression equation for each category of the factor, and confirm that you get the same results (within rounding error) as you obtain by performing the regression on the quantitative explanatory variables separately for each category of the factor.
 
@@ -179,5 +183,11 @@ BIC_model = step(duncan_interact_model, Prestige~1 , direction = "backward",
 The final model I obtained from stepwise regression with BIC is
 
 X_1: income
+
+X_2: education
+
+D_1: type prof
+
+D_2: type wc
 
 Final Model: $\hat{Y_i} = -0.18503 + 0.59755 X_1 + 0.34532 X_2 + 16.65751 D_1 -14.66113 D_2$
