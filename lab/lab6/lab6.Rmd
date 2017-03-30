@@ -24,30 +24,40 @@ housing_boston_model = lm(lm_object, housing_boston)
 AIC_forward = step(lm(MEDV ~ 1, data = housing_boston), lm_object, direction = "forward")
 AIC_backward = step(housing_boston_model, MEDV ~ 1, direction = "backward")
 
+AIC_forward
+AIC_backward
+
 AIC_forward_score = AIC(AIC_forward)
 AIC_backward_score = AIC(AIC_backward)
 
 AIC_forward_score
 AIC_backward_score
 ```
-The forward model and backward model are the same.
+
+The AIC forward model and AIC backward model are the same.
 
 
 
 #### (2) Do forward and Backward model selection using BIC. Are the model obtained from forward and backward selection are same?
 ```{r}
 # Find n
-n = dim(housing_boston)[2]-1
+n = dim(housing_boston)[1]
 n
 BIC_forward = step(lm(MEDV ~ 1,data = housing_boston),lm_object,
                     direction = "forward",k = log(n))
 BIC_backward = step(housing_boston_model, MEDV ~ 1 , direction="backward", k=log(n))
-BIC_forward_score = BIC(BIC_forward)
-BIC_backward_score = BIC(BIC_backward)
+
 BIC_forward
 BIC_backward
+
+BIC_forward_score = BIC(BIC_forward)
+BIC_backward_score = BIC(BIC_backward)
+
+BIC_forward_score
+BIC_backward_score
 ```
-The forward model and backward model are the same.
+
+The BIC forward model and BIC backward model are different.
 
 
 
@@ -56,7 +66,7 @@ The forward model and backward model are the same.
 AIC_forward
 BIC_forward
 ```
-Therefore, we can see that the forward model from Q1 and Q2 are the same.
+Therefore, we can see that the forward model from Q1 and Q2 are different.
 
 
 
