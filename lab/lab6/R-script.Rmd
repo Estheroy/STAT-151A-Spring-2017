@@ -181,32 +181,65 @@ summary(fit1)
 ```{r}
 fit <- lm(formula = MEDV ~ LSTAT + RM + PTRATIO + DIS + NOX + CHAS + 
     B + ZN + CRIM + RAD + TAX, data = housing_boston)
+summary(fit)
 confint(fit,c("LSTAT", "RM", "PTRATIO", "DIS", "NOX", "CHAS","B","ZN","CRIM",
 "RAD","TAX"), level=0.95)
 
 ```
 
 
+#### Lab 7
+
 ```{r}
 colname<-c("CRIM","ZN","INDUS","CHAS","NOX","RM","AGE","DIS","RAD","TAX","PTRATIO","B","LSTAT","MEDV")
-housing_boston <- read_csv("~/Desktop/STAT 151A/STAT-151A/lab/lab6/housing_boston.csv")
+housing_boston <- read_csv("~/Desktop/STAT 151A/STAT-151A/lab/lab6/housing_boston.csv", col_names = FALSE)
 names(housing_boston)<-colname
 
 summary(housing_boston)
+
+X = as.matrix(cbind(1,housing_boston$CRIM,housing_boston$ZN,housing_boston$INDUS,housing_boston$CHAS,housing_boston$NOX,housing_boston$RM,housing_boston$AGE,housing_boston$DIS,housing_boston$RAD,housing_boston$TAX,housing_boston$PTRATIO,housing_boston$B,housing_boston$LSTAT))
+Y = as.matrix(housing_boston$MEDV)
+beta_hat = solve(t(X)%*%X) %*% t(X) %*% Y
+beta_hat_coefficient = as.data.frame(
+  cbind(c("Intercept","CRIM","ZN","INDUS","CHAS","NOX","RM","AGE","DIS","RAD",
+          "TAX","PTRATIO","B","LSTAT"), 
+        beta_hat))
+names(beta_hat_coefficient) = c("Slope Coefficient","Estimates")
+beta_hat_coefficient
+
+predicted_y = X%*%beta_hat
+
+residuals = as.matrix(housing_boston$MEDV - predicted_y) 
+head(residuals)
+
+n = nrow(housing_boston)  # number of data points
+k = ncol(X)  # number of parameters
+
+# calculate tye estimated error variance
+SE_variance = (t(residuals)%*%residuals) / (n-k-1)
+SE_variance
+
+# calculate the variance-covariance matrix
+VCV_matrix = as.numeric(SE_variance) * solve(t(X)%*%X)
+VCV_matrix
+
+StdErr = sqrt(diag(VCV_matrix))
+StdErr
+
+t_value = beta_hat/StdErr
+t_value
+
+p_value = rbind(2*pt(abs(t_value), df=n-k, lower.tail= FALSE))
+p_value                
+
+fit = lm(formula = MEDV ~ CRIM+ZN+INDUS+CHAS+NOX+RM+AGE+DIS+RAD+TAX+PTRATIO+B+LSTAT, data = housing_boston)
+
+summary(fit)
+
+library(car)
+linearHypothesis(fit ,"1*CRIM + 1*ZN = 1")
+
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
