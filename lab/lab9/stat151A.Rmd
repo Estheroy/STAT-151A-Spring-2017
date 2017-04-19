@@ -1,0 +1,67 @@
+---
+title: "lab9"
+author: "Xuanpei Ouyang"
+date: "4/17/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+setwd("~/Desktop/STAT 151A/STAT-151A/lab/lab9")
+
+MyData = read.csv("MyData.csv", head = TRUE)
+
+MyData2 = read.csv("MyData2.csv", head = TRUE)
+
+MyData_model = lm(V5 ~ V1 + V2 + V3 + V4, data = MyData)
+summary(MyData_model)
+
+MyData_model = lm(V5 ~ V2 + V3 + V4, data = MyData)
+summary(MyData_model)
+
+MyData_model = lm(V5 ~ V3 + V4, data = MyData)
+summary(MyData_model)
+
+MyData_model = lm(V5 ~ V3, data = MyData)
+summary(MyData_model)
+
+
+
+MyData2_model = lm(V5 ~ V1 + V2 + V3 + V4, data = MyData2)
+summary(MyData2_model)
+
+MyData2_model = lm(V5 ~ V1 + V3 + V4, data = MyData2)
+summary(MyData2_model)
+
+MyData2_model = lm(V5 ~ V3 + V4, data = MyData2)
+summary(MyData2_model)
+
+MyData2_model = lm(V5 ~ V4, data = MyData2)
+summary(MyData2_model)
+```
+
+```{r}
+library(pls)
+# ncomp is k
+# add "validation  = cv" to use cross validation to 
+pcr_model1 = pcr(V5 ~ V1 + V2 + V3 + V4, scale = TRUE, ncomp = 1, data = MyData)
+summary(pcr_model1)
+
+mod2 = pcr(V5 ~ V1 + V2 + V3 + V4, scale = TRUE, data = MyData2, validation = "CV")
+mod2$loadings
+summary(mod2)
+```
+
+```{r}
+cv.glmnet(X = X, Y = Y, alpha = 0) # -> Ridge Regression
+cv.glmnet(X = X, Y= Y, alpha = 1) # -> LASSO
+```
