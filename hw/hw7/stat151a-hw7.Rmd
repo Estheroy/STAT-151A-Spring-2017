@@ -1,0 +1,102 @@
+---
+title: "STAT 151A hw7"
+author: "Esther Xuanpei Ouyang"
+date: "4/22/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+library(AER)
+library(MASS)
+```
+
+## Exercise D15.1
+
+### (a) Examine the distribution of the response variable. Based on this distribution, does it appear promising to model these data by linear least-squares regression, perhaps after transforming the response? Explain your answer.
+
+```{r}
+Long = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw7/Long.txt")
+summary(Long)
+
+# Plot the original response variable
+hist(Long$art)
+qqnorm(Long$art)
+
+positive_art = Long$art + 1
+symbox(~positive_art, data = Long)
+
+# Plot the log transformed response variable
+hist(log(positive_art))
+qqnorm(log(positive_art))
+
+# Plot the log transformed response variable
+hist(sqrt(Long$art))
+qqnorm(sqrt(Long$art))
+
+# Plot the log transformed response variable
+hist(Long$art^(1/3))
+qqnorm(Long$art^(1/3))
+```
+
+
+Tukey's Bulging Rule
+
+Poisson regression is useful when predicting an outcome variable representing counts from a set of continuous predictor variables.
+
+
+### (b) Following Long, perform a Poisson regression of art on the explanatory variables. What do you conclude from the results of this regression?
+
+```{r}
+fit = glm(art ~ fem+ment+phd+mar+kid5+art, family = poisson(), data = Long)
+
+summary(fit) # display results
+confint(fit) # 95% CI for the coefficients
+exp(coef(fit)) # exponentiated coefficients
+exp(confint(fit)) # 95% CI for exponentiated coefficients
+predicted = predict(fit, type="response") # predicted values
+# residuals(fit, type="deviance") # residuals
+
+
+```
+
+
+If you have overdispersion (see if residual deviance is much larger than degrees of freedom), you may want to use quasipoisson() instead of poisson().
+
+
+### (c) Perform regression diagnostics on the model fit in the previous question. If you identify any problems, try to deal with them. Are the conclusions of the research altered?
+
+```{r}
+```
+
+### (d) Refit Long’s model allowing for overdispersion (using a quasi-Poisson or negative-binomial model). Does this make a difference to the results?
+
+```{r}
+
+dispersiontest(fit)
+
+overdisper_fit = glm(art ~ fem+ment+phd+mar+kid5+art, family = quasipoisson(), data = Long)
+
+summary(overdisper_fit) # display results
+confint(overdisper_fit) # 95% CI for the coefficients
+exp(coef(overdisper_fit)) # exponentiated coefficients
+exp(confint(overdisper_fit)) # 95% CI for exponentiated coefficients
+predicted = predict(overdisper_fit, type="response") # predicted values
+# residuals(overdisper_fit, type="deviance") # residuals
+
+glm.nb(art ~ fem+ment+phd+mar+kid5+art, data = Long)
+```
+
+
+## Exercise D15.2 
+
+### Chapter 12 describes the linear regression of wages on gender, age, and education for data drawn from the Canadian Survey of Labour and Income Dynamics (the “SLID”). The data are in the file SLID-Ontario.txt. In the text, the response variable is log-transformed to correct skewness and non-constant spread in the regression. Consider an alternative strategy employing a gamma generalized linear model. After fitting this model and checking its adequacy, which of the two approaches to the data do you prefer?
+
+```{r}
+SLID = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw7/SLID-Ontario.txt")
+summary(SLID)
+
+
+fit_SLID_gamma = glm(V3~V1+V2+V4, family = Gamma(link = "inverse"), data = SLID)
+```

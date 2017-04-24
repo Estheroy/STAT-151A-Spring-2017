@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)http://www.statmethods.net/advstats/glm.html -->
+<html class="gr__statmethods_net"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<link href="./Quick-R_ Generalized Linear Models_files/css" rel="stylesheet">
+    <title>Quick-R: Generalized Linear Models</title>
+    <meta name="Description" content="Learn how generalized linear models are fit using the glm() function. This covers logistic regression, poisson regression, and survival analysis.">
+
+    
+    <meta name="Distribution" content="Global">
+    <meta name="Author" content="Robert Kabacoff - robk@statmethods.net">
+    <meta name="Robots" content="index,follow">
+    <meta name="verify-v1" content="mRsSDOT/ebuSJJB2GXuo1UZi3nZ+NsE+JIBwg77QtNE=">
+    <meta name="y_key" content="c94970a1faf084da">
+    <link href="./Quick-R_ Generalized Linear Models_files/style.css" rel="stylesheet" type="text/css">
+<script src="./Quick-R_ Generalized Linear Models_files/286618111707433" async=""></script><script async="" src="./Quick-R_ Generalized Linear Models_files/fbevents.js"></script><script async="" src="./Quick-R_ Generalized Linear Models_files/gtm.js"></script><script async="" src="./Quick-R_ Generalized Linear Models_files/analytics.js"></script><script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-55355690-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-M63JRHD');</script>
+<!-- End Google Tag Manager -->
+</head>
+
+<body data-gr-c-s-loaded="true">
+    <div id="header">
+ <nav>
+        <a href="http://www.statmethods.net/index.html"><img id="logo" src="./Quick-R_ Generalized Linear Models_files/logo.png" alt="Quick-R Logo"></a>
+        <div id="menu">
+          <ul>
+                <li><a href="http://www.statmethods.net/r-tutorial/index.html">R Tutorial</a></li>
+		        <li>|<a href="http://www.statmethods.net/interface/index.html">R Interface</a></li>
+		        <li>|<a href="http://www.statmethods.net/input/index.html">Data Input</a></li>
+		        <li>|<a href="http://www.statmethods.net/management/index.html">Data Management</a></li>
+		        <li>|<a href="http://www.statmethods.net/stats/index.html">Statistics</a></li>
+			    <li>|<a href="http://www.statmethods.net/advstats/index.html">Advanced Statistics</a></li>
+			    <li>|<a href="http://www.statmethods.net/graphs/index.html">Graphs</a></li>
+			    <li>|<a href="http://www.statmethods.net/advgraphs/index.html">Advanced Graphs</a></li>
+            </ul>
+   </div>
+   </nav>
+
+
+<form id="search" action="http://search.freefind.com/find.html" method="get" accept-charset="utf-8" target="_self">
+            <input type="hidden" name="si" value="23055275">
+			<input type="hidden" name="pid" value="r">
+		    <input type="hidden" name="n" value="0">
+			<input type="hidden" name="_charset_" value="">
+			<input type="hidden" name="bcd" value="÷">
+			<input type="hidden" name="nsb">
+			<input type="hidden" name="css" value="">
+			<input class="text" type="text" name="query">
+			<input name="search" class="submit" value="Search" type="submit">
+        </form>
+</div><!-- header -->
+    <div id="main"><div id="main2">
+            <div id="sidebar">
+<nav>
+                <h2>&lt; <a href="http://www.statmethods.net/advstats/index.html">Advanced Statistics</a></h2>
+            <ul>
+
+              <li style="color:#3476A8;"> Generalized Linear Models </li>
+              <li><a href="http://www.statmethods.net/advstats/discriminant.html">Discriminant Function </a></li>
+              <li><a href="http://www.statmethods.net/advstats/timeseries.html">Time Series </a></li>
+              <li><a href="http://www.statmethods.net/advstats/factor.html">Factor Analysis </a></li>
+              <li><a href="http://www.statmethods.net/advstats/ca.html">Correspondence Analysis </a></li>
+              <li><a href="http://www.statmethods.net/advstats/mds.html">Multidimensional Scaling </a></li>
+              <li><a href="http://www.statmethods.net/advstats/cluster.html">Cluster Analysis </a></li>
+              <li><a href="http://www.statmethods.net/advstats/cart.html">Tree-Based Models </a></li>
+              <li><a href="http://www.statmethods.net/advstats/bootstrapping.html">Bootstrapping</a></li>
+              <li><a href="http://www.statmethods.net/advstats/matrix.html">Matrix Algebra </a></li>
+
+            </ul>
+                    </nav>
+<h2>R in Action</h2>
+               <div class="box">
+                    <p><a href="http://www.manning.com/kabacoff2/?a_aid=RiA2ed&amp;a_bid=5c2b1e1d"><img src="./Quick-R_ Generalized Linear Models_files/kabacoff_cover150.jpg" alt="R in Action" width="73" height="90" class="float-left"></a></p>
+                    <p><a href="http://www.manning.com/kabacoff2/?a_aid=RiA2ed&amp;a_bid=5c2b1e1d" target="_blank">R in Action</a> (2nd ed) significantly expands upon this material.
+					Use promo code <b>ria38</b> for a 38% discount.</p>
+
+                </div>
+
+            </div><!-- sidebar -->
+            <div id="content">
+
+
+
+<h1>Generalized Linear Models   </h1>
+
+				<p>Generalized linear models are fit using the <strong>glm( )</strong> function. The form of the <strong>glm</strong> function is </p>
+				<p><strong>glm(</strong><em>formula</em><strong>, family=</strong><em>familytype</em><strong>(link=</strong><em>linkfunction</em><strong>), data=)</strong></p>
+				<table>
+				<tbody><tr>
+				<td>
+				  <strong>Family				</strong></td>
+				<td>
+				  <strong>Default Link Function				</strong></td>
+				</tr>
+				<tr>
+				  <td>binomial</td>
+				  <td>(link = "logit") </td>
+				  </tr>
+				<tr>
+				  <td>gaussian</td>
+				  <td>(link = "identity") </td>
+				  </tr>
+				<tr>
+				  <td>Gamma  </td>
+				  <td>(link = "inverse")</td>
+				  </tr>
+				<tr>
+				  <td>inverse.gaussian</td>
+				  <td>(link = "1/mu^2") </td>
+				  </tr>
+				<tr>
+				  <td>poisson</td>
+				  <td>(link = "log")</td>
+				  </tr>
+				<tr>
+				  <td> quasi  </td>
+				  <td>(link = "identity", variance = "constant")</td>
+				  </tr>
+				<tr>
+				  <td>quasibinomial</td>
+				  <td>(link = "logit") </td>
+				  </tr>
+				<tr>
+				  <td>quasipoisson</td>
+				  <td>(link = "log")</td>
+				  </tr>
+				</tbody></table>
+				<p>See <strong>help(glm)</strong> for other modeling options. See <strong>help(family)</strong> for other allowable link functions for each family. Three subtypes of generalized linear models will be covered here: logistic regression, poisson regression, and survival analysis.</p>
+				<h2>Logistic Regression</h2>
+				<p>Logistic regression is useful when you are predicting a binary outcome from a set of continuous  predictor variables. It is frequently preferred over <a href="http://www.statmethods.net/advstats/discriminant.html">discriminant function</a> analysis because of its less restrictive assumptions.</p>
+				<p><code># Logistic Regression<br>
+		      # where F is a binary factor and <br>
+		        #
+	          x1-x3 are continuous predictors <br>
+				  fit &lt;- glm(F~x1+x2+x3,data=mydata,family=binomial())<br>
+				  summary(fit) # display results<br>
+				  confint(fit) # 95% CI for the coefficients<br>
+				  exp(coef(fit)) # exponentiated coefficients<br>
+				  exp(confint(fit)) # 95% CI for exponentiated coefficients<br>
+				  predict(fit, type="response") # predicted values<br>
+				  residuals(fit, type="deviance") # residuals
+				</code></p>
+				<p>You can use <strong>anova(</strong><em>fit1</em><strong>,</strong><em>fit2</em><strong>, test="Chisq")</strong> to compare nested models. Additionally, <strong>cdplot(</strong><em>F</em><strong>~</strong><em>x</em><strong>, data=</strong><em>mydata</em><strong>)</strong> will display the conditional density plot of the binary outcome <em>F</em> on the continuous <em>x</em> variable. </p>
+				<p><a href="http://www.statmethods.net/advstats/images/cdplot.jpg"><img src="./Quick-R_ Generalized Linear Models_files/smcdplot.jpg" alt="conditional density plot" width="103" height="103"></a> click to view </p>
+				<h2>Poisson Regression</h2>
+				<p>Poisson regression is useful when predicting an outcome variable representing counts from a set of continuous predictor variables.</p>
+				<p><code># Poisson Regression<br>
+				  # where count is a count and <br>
+				  #
+			    x1-x3 are continuous predictors
+                  <br>
+				fit &lt;- glm(count ~ x1+x2+x3, data=mydata, family=poisson())<br>
+				summary(fit) display results
+</code><br>
+				If you have overdispersion (see if residual deviance is much larger than degrees of freedom), you may want to use <strong>quasipoisson()</strong> instead of <strong>poisson()</strong>.</p>
+				<h2>Survival Analysis</h2>
+				<p>Survival analysis (also called event history analysis or reliability analysis) covers a set of techniques for modeling the time to an event. Data may be <strong>right censored</strong> - the event may not have occured by the end of the study or we may have incomplete information on an  observation but know that up to a certain time the event had not occured (e.g. the participant dropped out of study in week 10 but was alive at that time). </p>
+				<p>While generalized linear models are typically analyzed using the <strong>glm( ) </strong>function, survival analyis is typically carried out using functions from the <a href="http://cran.r-project.org/web/packages/survival/index.html">survival</a> package . The survival package can handle one and two sample problems, parametric accelerated failure models,   and the Cox proportional hazards model. </p>
+				<p>Data are typically entered in the format <em>start time</em>, <em>stop time</em>, and <em>status</em> (1=event occured, 0=event did not occur). Alternatively, the data may be in the format <em>time to event</em> and <em>status</em> (1=event occured, 0=event did not occur). A status=0 indicates that the observation is right cencored. Data are bundled into a <strong>Surv object </strong>via the <strong>Surv( )</strong> function prior to further analyses. </p>
+				<p><strong>survfit( )</strong> is used to estimate a survival distribution for one or more groups.<br>
+			    <strong>survdiff( )</strong> tests for differences in survival distributions between two or more groups. <strong><br>
+		        coxph( )</strong> models the hazard function on a set of predictor variables. </p>
+				<p><code># Mayo Clinic Lung Cancer Data<br>
+				  library(survival)<br>
+				  <br>
+				  # learn about the dataset<br>
+			    help(lung)<br>
+			    <br>
+		      # create a Surv object
+              <br>
+              survobj &lt;- with(lung, Surv(time,status))<br>
+				  <br>
+				  # Plot survival distribution of the total sample<br>
+				  # Kaplan-Meier estimator
+			    <br>
+				  fit0 &lt;- survfit(survobj~1, data=lung)<br>
+				  summary(fit0)<br>
+				  plot(fit0, xlab="Survival Time in Days", <br>
+&nbsp;&nbsp;			    ylab="% Surviving", yscale=100,<br>
+&nbsp;&nbsp; main="Survival Distribution (Overall)") <br>
+				  <br>
+				  # Compare the survival distributions of men and women <br>
+			    fit1 &lt;- survfit(survobj~sex,data=lung)<br>
+			    <br>
+# plot the survival distributions by sex <br>
+plot(fit1, xlab="Survival Time in Days", <br>
+&nbsp; ylab="% Surviving", yscale=100, col=c("red","blue"),<br>
+&nbsp;&nbsp;main="Survival Distributions by Gender") <br>
+&nbsp;&nbsp;legend("topright", title="Gender", c("Male", "Female"),<br>
+&nbsp; fill=c("red", "blue"))<br>
+				<br>
+				# test for difference between male and female <br>
+				# survival curves (logrank test) <br>
+				survdiff(survobj~sex, data=lung)
+                <br>
+				<br>
+				# predict male survival from age and medical scores
+				<br>
+				MaleMod &lt;- coxph(survobj~age+ph.ecog+ph.karno+pat.karno,<br>
+				&nbsp;&nbsp;data=lung, subset=sex==1)<br>
+				<br>
+				# display results <br>
+				MaleMod<br>
+				<br>
+				# evaluate the proportional hazards assumption <br>
+				cox.zph(MaleMod)
+				</code></p>
+				<p><a href="http://www.statmethods.net/advstats/images/survival1.png"><img src="./Quick-R_ Generalized Linear Models_files/smsurvival1.jpg" alt="survival distribution for total group" width="103" height="103"></a> <a href="http://www.statmethods.net/advstats/images/survival2.png"><img src="./Quick-R_ Generalized Linear Models_files/smsurvival2.jpg" alt="survival distribution by gender" width="103" height="103"></a> click to view </p>
+				<p>See Thomas Lumley's  <a href="http://cran.r-project.org/doc/Rnews/Rnews_2004-1.pdf">R news article</a> on the survival package for more information. Other good sources include Mai Zhou's <a href="https://www.r-project.org/doc/Rnews/Rnews_2004-1.pdf#page=26">Use R Software to do Survival Analysis and Simulation</a> and M. J. Crawley's chapter on <a href="http://www3.imperial.ac.uk/portal/pls/portallive/docs/1/1171928.PDF">Survival Analysis</a>. </p>
+           <h2>To Practice</h2>
+<p>Try this <a href="https://campus.datacamp.com/courses/introduction-to-credit-risk-modeling-in-r/chapter-2-logistic-regression?ex=2">interactive exercise on basic logistic regression with R</a> using age as a predictor for credit risk.</p>
+ </div><!-- content -->
+            <div class="clearing">&nbsp;</div>
+    </div></div><!-- main --><!-- main2 -->
+    <div id="footer">
+        <p>Copyright © 2017 <a href="http://www.statmethods.net/about/author.html">Robert I. Kabacoff, Ph.D.</a> | <a href="http://www.statmethods.net/about/sitemap.html">Sitemap</a></p>
+    </div>
+
+
+
+<script type="text/javascript" id="">!function(b,e,f,g,a,c,d){b.fbq||(a=b.fbq=function(){a.callMethod?a.callMethod.apply(a,arguments):a.queue.push(arguments)},b._fbq||(b._fbq=a),a.push=a,a.loaded=!0,a.version="2.0",a.queue=[],c=e.createElement(f),c.async=!0,c.src=g,d=e.getElementsByTagName(f)[0],d.parentNode.insertBefore(c,d))}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");fbq("init","286618111707433");fbq("track","PageView");</script>
+<noscript>&lt;img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=286618111707433&amp;amp;ev=PageView&amp;amp;noscript=1"&gt;</noscript>
+
+
+</body><span class="gr__tooltip"><span class="gr__tooltip-content"></span><i class="gr__tooltip-logo"></i><span class="gr__triangle"></span></span></html>

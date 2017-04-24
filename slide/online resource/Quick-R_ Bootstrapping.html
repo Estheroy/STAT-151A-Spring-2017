@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)http://www.statmethods.net/advstats/bootstrapping.html -->
+<html class="gr__statmethods_net"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<link href="./Quick-R_ Bootstrapping_files/css" rel="stylesheet">
+    <title>Quick-R: Bootstrapping</title>
+    <meta name="Description" content="You can bootstrap a single statistic or a vector (e.g., regression weights). This section will get you started with basic nonparametric bootstrapping.">
+
+    
+    <meta name="Distribution" content="Global">
+    <meta name="Author" content="Robert Kabacoff - robk@statmethods.net">
+    <meta name="Robots" content="index,follow">
+    <meta name="verify-v1" content="mRsSDOT/ebuSJJB2GXuo1UZi3nZ+NsE+JIBwg77QtNE=">
+    <meta name="y_key" content="c94970a1faf084da">
+    <link href="./Quick-R_ Bootstrapping_files/style.css" rel="stylesheet" type="text/css">
+<!-- Google Tag Manager -->
+<script src="./Quick-R_ Bootstrapping_files/286618111707433" async=""></script><script async="" src="./Quick-R_ Bootstrapping_files/fbevents.js"></script><script async="" src="./Quick-R_ Bootstrapping_files/gtm.js"></script><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-M63JRHD');</script>
+<!-- End Google Tag Manager -->
+</head>
+
+<body data-gr-c-s-loaded="true">
+    <div id="header">
+ <nav>
+        <a href="http://www.statmethods.net/index.html"><img id="logo" src="./Quick-R_ Bootstrapping_files/logo.png" alt="Quick-R Logo"></a>
+        <div id="menu">
+          <ul>
+                <li><a href="http://www.statmethods.net/r-tutorial/index.html">R Tutorial</a></li>
+		        <li>|<a href="http://www.statmethods.net/interface/index.html">R Interface</a></li>
+		        <li>|<a href="http://www.statmethods.net/input/index.html">Data Input</a></li>
+		        <li>|<a href="http://www.statmethods.net/management/index.html">Data Management</a></li>
+		        <li>|<a href="http://www.statmethods.net/stats/index.html">Statistics</a></li>
+			    <li>|<a href="http://www.statmethods.net/advstats/index.html">Advanced Statistics</a></li>
+			    <li>|<a href="http://www.statmethods.net/graphs/index.html">Graphs</a></li>
+			    <li>|<a href="http://www.statmethods.net/advgraphs/index.html">Advanced Graphs</a></li>
+            </ul>
+   </div>
+   </nav>
+
+
+<form id="search" action="http://search.freefind.com/find.html" method="get" accept-charset="utf-8" target="_self">
+            <input type="hidden" name="si" value="23055275">
+			<input type="hidden" name="pid" value="r">
+		    <input type="hidden" name="n" value="0">
+			<input type="hidden" name="_charset_" value="">
+			<input type="hidden" name="bcd" value="÷">
+			<input type="hidden" name="nsb">
+			<input type="hidden" name="css" value="">
+			<input class="text" type="text" name="query">
+			<input name="search" class="submit" value="Search" type="submit">
+        </form>
+</div><!-- header -->
+    <div id="main"><div id="main2">
+            <div id="sidebar">
+<nav>
+                <h2>&lt; <a href="http://www.statmethods.net/advstats/index.html">Advanced Statistics</a></h2>
+            <ul>
+
+              <li><a href="http://www.statmethods.net/advstats/glm.html">Generalized Linear Models </a></li>
+              <li><a href="http://www.statmethods.net/advstats/discriminant.html">Discriminant Function </a></li>
+              <li><a href="http://www.statmethods.net/advstats/timeseries.html">Time Series </a></li>
+              <li><a href="http://www.statmethods.net/advstats/factor.html">Factor Analysis </a></li>
+              <li><a href="http://www.statmethods.net/advstats/ca.html">Correspondence Analysis </a></li>
+              <li><a href="http://www.statmethods.net/advstats/mds.html">Multidimensional Scaling </a></li>
+              <li><a href="http://www.statmethods.net/advstats/cluster.html">Cluster Analysis </a></li>
+              <li><a href="http://www.statmethods.net/advstats/cart.html">Tree-Based Models </a></li>
+              <li style="color:#3476A8;">  Bootstrapping</li>
+              <li><a href="http://www.statmethods.net/advstats/matrix.html">Matrix Algebra </a></li>
+            </ul>
+                    </nav>
+<h2>R in Action</h2>
+               <div class="box">
+                    <p><a href="http://www.manning.com/kabacoff2/?a_aid=RiA2ed&amp;a_bid=5c2b1e1d"><img src="./Quick-R_ Bootstrapping_files/kabacoff_cover150.jpg" alt="R in Action" width="73" height="90" class="float-left"></a></p>
+                    <p><a href="http://www.manning.com/kabacoff2/?a_aid=RiA2ed&amp;a_bid=5c2b1e1d" target="_blank">R in Action</a> (2nd ed) significantly expands upon this material.
+					Use promo code <b>ria38</b> for a 38% discount.</p>
+
+                </div>
+
+            </div><!-- sidebar -->
+            <div id="content">
+
+
+
+ <h1>Bootstrapping</h1>
+
+ 				<h2>Nonparametric Bootstrapping </h2>
+ 				<p>The <a href="http://cran.r-project.org/web/packages/boot/index.html">boot</a> package provides extensive facilities for bootstrapping and related resampling methods. You can bootstrap a single statistic (e.g. a median), or a vector (e.g., regression weights). This section will get you started with basic nonparametric bootstrapping.</p>
+ 				<p>The main bootstrapping function is <strong>boot( ) </strong>and has the following  format:</p>
+ 				<p><strong><em>bootobject</em> &lt;- boot(data= , statistic= , R=, ...) </strong>where</p>
+ 				<table width="85%">
+ 				<tbody><tr>
+ 				<td><strong>parameter</strong></td>
+ 				<td><strong>description</strong></td>
+ 				</tr>
+ 				<tr>
+ 				  <td><strong>data</strong></td>
+ 				  <td>A vector, matrix, or data frame </td>
+ 				  </tr>
+ 				<tr>
+ 				  <td><strong>statistic</strong></td>
+ 				  <td>A function that produces the k statistics to be bootstrapped (k=1 if bootstrapping a single statistic). <br>
+ 			      The function should include an <em>indices parameter</em> that the <strong>boot()</strong> function can use to select cases for each replication (see examples below). </td>
+ 				  </tr>
+ 				<tr>
+ 				  <td>R</td>
+ 				  <td>Number of bootstrap replicates </td>
+ 				  </tr>
+ 				<tr>
+ 				  <td><strong>...</strong></td>
+ 				  <td>Additional parameters to be passed to the function that produces the statistic of interest </td>
+ 				  </tr>
+ 				</tbody></table>
+ 				<p><strong>boot( )</strong> calls the statistic function <em>R</em> times. Each time, it generates a set of random indices, with replacement, from the integers 1:nrow(<em>data</em>). These indices are used within the statistic function to select a sample. The statistics are calculated on the sample and the results are accumulated in the <em>bootobject</em>. The <em>bootobject</em> structure includes</p>
+ 				<table width="85%">
+ 				<tbody><tr>
+ 				<td><strong>element</strong></td>
+ 				<td><strong>description</strong></td>
+ 				</tr>
+ 				<tr>
+ 				  <td><strong>t0</strong></td>
+ 				  <td>The observed values of k statistics  applied to the orginal data. </td>
+ 				  </tr>
+ 				<tr>
+ 				  <td><strong>t</strong></td>
+ 				  <td>An R x k matrix where each row is a bootstrap replicate of   the k statistics. </td>
+ 				  </tr>
+ 				</tbody></table>
+ 				<p>You can access these as <em>bootobject</em>$t0 and <em>bootobject</em>$t.</p>
+ 				<p>Once you generate the bootstrap samples, <strong>print(</strong><em>bootobject</em><strong>)</strong> and <strong>plot(</strong><em>bootobject</em><strong>)</strong> can be used to examine the results. If the results look reasonable, you can  use<strong> boot.ci(</strong><strong><em> </em>)</strong> function to obtain confidence intervals for the statistic(s). </p>
+ 				<p>The  format is</p>
+ 				<p> <strong>boot.ci(</strong><em>bootobject, </em><strong>conf=, type=</strong> <strong> )</strong> where</p>
+ 				<p></p><table width="85%">
+ 				<tbody><tr>
+ 				<td><strong>parameter</strong></td>
+ 				<td><strong>description</strong></td>
+ 				</tr>
+ 				<tr>
+ 				  <td><strong><em>bootobject</em></strong></td>
+ 				  <td>The object returned by the boot function</td>
+ 				  </tr>
+ 				<tr>
+ 				  <td><strong>conf</strong></td>
+ 				  <td>The desired confidence interval (default: conf=0.95)</td>
+ 				  </tr>
+ 				<tr>
+ 				  <td><strong>type</strong></td>
+ 				  <td>The type of confidence interval returned. Possible values are "norm", "basic", "stud", "perc", "bca" and "all" (default: type="all")</td>
+ 				  </tr>
+ 				</tbody></table><p></p>
+ 				<h3>Bootstrapping a Single Statistic (k=1) </h3>
+ 				<p>The following example generates the bootstrapped 95% confidence interval for R-squared in the linear regression of miles per gallon (mpg) on car weight (wt) and displacement (disp). The data source is mtcars. The bootstrapped confidence interval is based on 1000 replications. </p>
+ 		        <p><code># Bootstrap 95% CI for R-Squared<br>
+ 			    library(boot)<br>
+ 			    # function to obtain R-Squared from the data <br>
+ 	            rsq &lt;- function(formula, data, indices)
+ 		          {<br>
+ 		          &nbsp;&nbsp;d &lt;- data[indices,] # allows boot to select sample <br>
+ 		          &nbsp;&nbsp;fit &lt;- lm(formula, data=d)<br>
+ 		          &nbsp; return(summary(fit)$r.square)<br>
+ 		          }
+ 		          <br>
+ 		          # bootstrapping with 1000 replications <br>
+ 	            results &lt;- boot(data=mtcars, statistic=rsq, <br>
+ &nbsp;&nbsp;	            R=1000, formula=mpg~wt+disp)<br>
+ <br>
+
+ # view results<br>
+ results
+ <br>
+ plot(results)<br>
+
+ <br>
+ # get 95% confidence interval <br>
+ 		          boot.ci(results, type="bca")</code></p>
+ 				<p><a href="http://www.statmethods.net/advstats/images/bootstrap.png"><img src="./Quick-R_ Bootstrapping_files/smbootstrap.jpg" alt="bootstrap results" width="103" height="103"></a> click to view </p>
+ 				<h3>Bootstrapping several Statistics (k&gt;1) </h3>
+ 				<p>In  example above, the function rsq returned a number and boot.ci returned a single confidence interval. The statistics function you provide can also return a vector. In the next example we get the 95% CI for the three model regression coefficients (intercept,  car weight, displacement). In this case we add an index parameter to <strong>plot( ) and boot.ci( )</strong> to indicate which column in <em>bootobject</em>$t is to analyzed. </p>
+ 		        <p><code># Bootstrap 95% CI for regression coefficients <br>
+ 			    library(boot)<br>
+ 			    # function to obtain regression weights
+ 	            <br>
+ 	            bs &lt;- function(formula, data, indices)
+ 		          {<br>
+ 		          &nbsp;&nbsp;d &lt;- data[indices,] # allows boot to select sample <br>
+ 		          &nbsp;&nbsp;fit &lt;- lm(formula, data=d)<br>
+ 		          &nbsp;&nbsp;return(coef(fit))
+ 		          <br>
+ 		          }
+ 		          <br>
+ 		          # bootstrapping with 1000 replications <br>
+ 	            results &lt;- boot(data=mtcars, statistic=bs, <br>
+ &nbsp;&nbsp;	            R=1000, formula=mpg~wt+disp)<br>
+ <br>
+ # view results<br>
+ results<br>
+ plot(results, index=1) # intercept <br>
+ plot(results, index=2) # wt <br>
+ plot(results, index=3) # disp
+ <br>
+ <br>
+ # get 95% confidence intervals <br>
+ 		          boot.ci(results, type="bca", index=1)
+       # intercept <br>
+ 		          boot.ci(results, type="bca", index=2)
+   # wt <br>
+ 		          boot.ci(results, type="bca", index=3)
+ 				# disp </code></p>
+ 				<p><a href="http://www.statmethods.net/advstats/images/bootstrap2.png"><img src="./Quick-R_ Bootstrapping_files/smbootstrap2.jpg" alt="bootstrap intercept" width="103" height="103"></a> <a href="http://www.statmethods.net/advstats/images/bootstrap3.png"><img src="./Quick-R_ Bootstrapping_files/smbootstrap3.jpg" alt="bootstrap b1" width="103" height="103"></a> <a href="http://www.statmethods.net/advstats/images/bootstrap4.png"><img src="./Quick-R_ Bootstrapping_files/smbootstrap4.jpg" alt="bootstrap b2" width="103" height="103"></a> click to view </p>
+ 				<h2>Going Further</h2>
+ 				<p>The <strong>boot( )</strong> function can generate both nonparametric and parametric resampling. For the nonparametric bootstrap, resampling methods include ordinary, balanced, antithetic and permutation. For the nonparametric bootstrap, stratified resampling is supported. Importance   resampling weights can also be specified. </p>
+ 				<p>The <strong>boot.ci( ) </strong>function takes a bootobject and generates 5 different types of  two-sided nonparametric confidence intervals.   These include the first order normal approximation, the basic bootstrap interval,   the studentized bootstrap interval, the bootstrap percentile interval, and the   adjusted bootstrap percentile (BCa) interval. </p>
+ 				<p>Look at <strong>help(boot)</strong>, <strong>help(boot.ci)</strong>, and <strong>help(plot.boot) </strong>for more details. </p>
+ 				<h2>Learning More</h2>
+				<p>Good sources of information include   <a href="http://cran.r-project.org/doc/Rnews/Rnews_2002-3.pdf">Resampling Methods in R: The boot Package</a> by Angelo Canty,  <a href="http://www.mayin.org/ajayshah/KB/R/documents/boot.html">Getting started with the boot package</a> by Ajay Shah, <a href="http://cran.r-project.org/doc/contrib/Fox-Companion/appendix-bootstrapping.pdf">Bootstrapping Regression Models </a>by John Fox, and  <a href="http://statwww.epfl.ch/davison/BMA/">Bootstrap Methods and Their Applications</a> by Davison and Hinkley. </p>
+            <h2>To Practice</h2>
+<p>Try this <a href="https://campus.datacamp.com/courses/computational-finance-and-financial-econometrics-with-r/lab-6-constant-expected-return-model?ex=10/">interactive exercise with the boot package</a> from DataCamp's Intro to Computational Finance with R course.</p>
+</div><!-- content -->
+            <div class="clearing">&nbsp;</div>
+    </div></div><!-- main --><!-- main2 -->
+    <div id="footer">
+        <p>Copyright © 2017 <a href="http://www.statmethods.net/about/author.html">Robert I. Kabacoff, Ph.D.</a> | <a href="http://www.statmethods.net/about/sitemap.html">Sitemap</a></p>
+    </div>
+
+
+
+<script type="text/javascript" id="">!function(b,e,f,g,a,c,d){b.fbq||(a=b.fbq=function(){a.callMethod?a.callMethod.apply(a,arguments):a.queue.push(arguments)},b._fbq||(b._fbq=a),a.push=a,a.loaded=!0,a.version="2.0",a.queue=[],c=e.createElement(f),c.async=!0,c.src=g,d=e.getElementsByTagName(f)[0],d.parentNode.insertBefore(c,d))}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");fbq("init","286618111707433");fbq("track","PageView");</script>
+<noscript>&lt;img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=286618111707433&amp;amp;ev=PageView&amp;amp;noscript=1"&gt;</noscript>
+
+
+</body><span class="gr__tooltip"><span class="gr__tooltip-content"></span><i class="gr__tooltip-logo"></i><span class="gr__triangle"></span></span></html>
