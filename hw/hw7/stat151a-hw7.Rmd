@@ -19,6 +19,7 @@ library(MASS)
 ```{r}
 Long = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw7/Long.txt")
 summary(Long)
+attach(Long)
 
 # Plot the original response variable
 hist(Long$art)
@@ -34,16 +35,14 @@ qqnorm(log(positive_art))
 # Plot the log transformed response variable
 hist(sqrt(Long$art))
 qqnorm(sqrt(Long$art))
-
-# Plot the log transformed response variable
-hist(Long$art^(1/3))
-qqnorm(Long$art^(1/3))
 ```
 
 
-Tukey's Bulging Rule
+Based on the histogram and the normal probability plot of the response variable, we can find out the data is not normally distributed but very right skewed. Instead, the distribution of response variable looks like a poisson distribution with small lambda. Also, the data looks more normal if we log or square root transform it.
 
-Poisson regression is useful when predicting an outcome variable representing counts from a set of continuous predictor variables.
+
+Therefore, the result will not looks promising if we fit the data by linear least-sqaure regression.
+
 
 
 ### (b) Following Long, perform a Poisson regression of art on the explanatory variables. What do you conclude from the results of this regression?
@@ -55,38 +54,66 @@ summary(fit) # display results
 confint(fit) # 95% CI for the coefficients
 exp(coef(fit)) # exponentiated coefficients
 exp(confint(fit)) # 95% CI for exponentiated coefficients
-predicted = predict(fit, type="response") # predicted values
-# residuals(fit, type="deviance") # residuals
-
-
+fit_predicted = predict(fit, type="response") # predicted values
+fit_residuals = residuals(fit, type="deviance") # residuals
 ```
 
 
-If you have overdispersion (see if residual deviance is much larger than degrees of freedom), you may want to use quasipoisson() instead of poisson().
+In terms of hypothesis testing with significance level at 0.05, the explanatory variables fem, ment, kid5 are significant while phd and mar are insignificant. 
+The range of deviance residual is not large. However, we notice that there is overdispersion because the residual deviance is much greater than the degrees of freedom.
+
+
 
 
 ### (c) Perform regression diagnostics on the model fit in the previous question. If you identify any problems, try to deal with them. Are the conclusions of the research altered?
 
 ```{r}
+# Assessing Outiers
+outlierTest(fit)
+
+# analysis variance of error
+plot(fit_residuals)
+
+# variance inflation factors
+vif(fit)
 ```
+
+
+The variance inflation factors is not large for explanatory variables fem, ment, phd, mar and kid5 but infinity for response variable art, which means the explanatory variables are not correlated and the response variables is highly correlated with the other explanantory variables.
+
+
+By plotting out the residual, we can see the variance of error is approximately constant.
+
+
+Also, in the model fit in (b), since the residual deviance is much larger than the degree of freedom, we can overdispersion and need to use quasipoisson() instead of poisson().
+
 
 ### (d) Refit Long’s model allowing for overdispersion (using a quasi-Poisson or negative-binomial model). Does this make a difference to the results?
 
 ```{r}
-
-dispersiontest(fit)
-
-overdisper_fit = glm(art ~ fem+ment+phd+mar+kid5+art, family = quasipoisson(), data = Long)
+overdisper_fit = glm(art ~ fem+ment+phd+mar+kid5+art, family = quasipoisson(link = "log"), data = Long)
 
 summary(overdisper_fit) # display results
 confint(overdisper_fit) # 95% CI for the coefficients
 exp(coef(overdisper_fit)) # exponentiated coefficients
 exp(confint(overdisper_fit)) # 95% CI for exponentiated coefficients
 predicted = predict(overdisper_fit, type="response") # predicted values
-# residuals(overdisper_fit, type="deviance") # residuals
+quasifit_residual = residuals(overdisper_fit, type="deviance") # residuals
 
-glm.nb(art ~ fem+ment+phd+mar+kid5+art, data = Long)
+overdisper_fit_sqrt = glm(art ~ fem+ment+phd+mar+kid5+art, family = quasipoisson(link = "sqrt"), data = Long)
+
+summary(overdisper_fit_sqrt)
+plot(quasifit_residual)
 ```
+
+
+Here, if we use quasi-Poisson with log link function to fit the generalized linear model to account for the overdispersion, we can see that the residual deviance does not change at all. 
+
+
+But if we fit the model with quasi-Poisson with sqrt link function, we can see that the residual deviance change from 1634.4 to 1620, which do gives a slightly better fitted model. 
+
+
+<br>
 
 
 ## Exercise D15.2 
@@ -94,9 +121,33 @@ glm.nb(art ~ fem+ment+phd+mar+kid5+art, data = Long)
 ### Chapter 12 describes the linear regression of wages on gender, age, and education for data drawn from the Canadian Survey of Labour and Income Dynamics (the “SLID”). The data are in the file SLID-Ontario.txt. In the text, the response variable is log-transformed to correct skewness and non-constant spread in the regression. Consider an alternative strategy employing a gamma generalized linear model. After fitting this model and checking its adequacy, which of the two approaches to the data do you prefer?
 
 ```{r}
-SLID = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw7/SLID-Ontario.txt")
+SLID = read.table("~/Desktop/STAT 151A/STAT-151A/hw/hw7/SLID-Ontario.txt", header = TRUE)
 summary(SLID)
 
+hist(SLID$compositeHourlyWages)
+qqnorm(SLID$compositeHourlyWages)
 
-fit_SLID_gamma = glm(V3~V1+V2+V4, family = Gamma(link = "inverse"), data = SLID)
+log_wages = log(SLID$compositeHourlyWages)
+hist(log_wages)
+qqnorm(log_wages)
+
+fit_SLID_log = lm(log_wages~age+sex+yearsEducation, data = SLID)
+summary(fit_SLID_log)
+vif(fit_SLID_log)
+SLID_logfit_residuals = residuals(fit_SLID_log)
+plot(SLID_logfit_residuals)
+
+fit_SLID_gamma = glm(compositeHourlyWages~age+sex+yearsEducation, family = Gamma, data = SLID)
+summary(fit_SLID_gamma)
+vif(fit_SLID_gamma)
+SLID_gammafit_residuals = residuals(fit_SLID_gamma)
+plot(SLID_gammafit_residuals)
 ```
+
+For both fitted model, all the explanatory variables are significant. Also, we can reject null hypotheses for both models. (since the F-statistics for log-transformed model is significant and for glm, residual deviance is less than null deviance). 
+
+
+They also have similar vif factors for their explanatory variables and similar spread of error for their residual variance.
+
+
+Although the result from two models are pretty similar, I think the generalized linear regression is better since it is flexible to adjust the link function to fit the model better.
